@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 
-set(CMAKE_CXX_COMPILER "clang++")
+if(NOT CMAKE_TOOLCHAIN_FILE)
+    set(CMAKE_CXX_COMPILER "clang++")
+endif()
 
 project(rfxh LANGUAGES CXX)
 
@@ -11,7 +13,7 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
 endif()
 
-if(CMAKE_BUILD_TYPE MATCHES Release AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+if(CMAKE_BUILD_TYPE MATCHES Release AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows" AND NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
     include(CheckIPOSupported)
     check_ipo_supported(RESULT ipo_supported)
     if(ipo_supported)
@@ -25,6 +27,9 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     add_compile_definitions(_WIN32)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     set(RFXH_PLATFORM posix)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
+    set(RFXH_PLATFORM posix)
+    add_compile_definitions(__ANDROID__)
 else()
     set(RFXH_PLATFORM posix)
 endif()

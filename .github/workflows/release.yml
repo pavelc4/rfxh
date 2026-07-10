@@ -43,27 +43,38 @@ jobs:
             binary: rfxh
             artifact: rfxh-linux-x86_64
             strip: true
-            compress_ext: ""
           - os: macos-latest
             target: x86_64-macos
             binary: rfxh
             artifact: rfxh-macos-x86_64
             strip: true
-            compress_ext: ""
           - os: macos-latest
             target: arm64-macos
             binary: rfxh
             artifact: rfxh-macos-arm64
             strip: true
             cmake_flags: -DCMAKE_SYSTEM_PROCESSOR=arm64
-            compress_ext: ""
+          - os: ubuntu-latest
+            target: aarch64-android
+            binary: rfxh
+            artifact: rfxh-android-arm64
+            strip: true
+            ndk: true
+            ndk_abi: arm64-v8a
+          - os: ubuntu-latest
+            target: x86_64-android
+            binary: rfxh
+            artifact: rfxh-android-x86_64
+            strip: true
+            ndk: true
+            ndk_abi: x86_64
 
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Dependencies (Linux)
-        if: ${{ matrix.os == 'ubuntu-latest' }}
+        if: ${{ matrix.os == 'ubuntu-latest' && !matrix.ndk }}
         run: |
           sudo apt-get update
           sudo apt-get install -y clang cmake build-essential
@@ -74,11 +85,29 @@ jobs:
           brew update
           brew install cmake || true
 
-      - name: Configure CMake
+      - name: Setup Android NDK
+        if: ${{ matrix.ndk }}
+        uses: nttld/setup-ndk@v1
+        id: setup_ndk
+        with:
+          ndk-version: r27
+          add-to-path: true
+
+      - name: Configure CMake (native)
+        if: ${{ !matrix.ndk }}
         run: |
           cmake -B build \
             -DCMAKE_BUILD_TYPE=Release \
             ${{ matrix.cmake_flags }}
+
+      - name: Configure CMake (Android NDK)
+        if: ${{ matrix.ndk }}
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE="${{ steps.setup_ndk.outputs.ANDROID_NDK_HOME }}/build/cmake/android.toolchain.cmake" \
+            -DANDROID_ABI=${{ matrix.ndk_abi }} \
+            -DANDROID_PLATFORM=android-24
 
       - name: Build
         run: cmake --build build --parallel
