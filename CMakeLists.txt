@@ -15,6 +15,7 @@ add_executable(rfxh
     src/text/charweight.cpp
     src/config/defaults.cpp
     src/config/cli.cpp
+    src/config/loader.cpp
 )
 
 target_include_directories(rfxh PRIVATE src)
