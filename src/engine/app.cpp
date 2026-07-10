@@ -1,7 +1,6 @@
 #include "engine/app.hpp"
 #include "config/fields.hpp"
 #include "logo/detect.hpp"
-#include "logo/detect.hpp"
 #include "render/constants.hpp"
 #include "terminal/terminal.hpp"
 #include "text/shading.hpp"
@@ -82,11 +81,11 @@ void App::run(int argc, char** argv) {
     // Setup render dimensions
     setup_render(opts);
 
-    // Build point cloud
-    render_.build_points(logo_, opts.size_scale);
-    render_.compute_threshold();
+        // Build point cloud
+        render_.build_points(logo_, opts.size_scale);
+        render_.compute_threshold();
 
-    // Animation loop
+        // Animation loop
     animation_loop(opts);
 }
 
@@ -196,10 +195,14 @@ void App::animation_loop(const config::CliOptions& opts) {
     std::fflush(stdout);
 
     for (int frame = 0; opts.max_frames == 0 || frame < opts.max_frames; frame++) {
-        // Check for keypress
+        // Check for keypress (only exit on actual data, not EOF)
         struct pollfd pfd = {STDIN_FILENO, POLLIN, 0};
-        if (poll(&pfd, 1, 0) > 0)
-            break;
+        int pret = poll(&pfd, 1, 0);
+        if (pret > 0 && (pfd.revents & POLLIN)) {
+            char c;
+            if (read(STDIN_FILENO, &c, 1) == 1)
+                break;
+        }
 
         // Handle terminal resize
         if (terminal::consume_resize_flag()) {
@@ -244,10 +247,6 @@ void App::animation_loop(const config::CliOptions& opts) {
         // Render to stdout
         render::render_frame(render_, render_height_, fetch_lines_, fetch_line_count_,
                              fetch_start_, logo_, color_inner_, color_outer_, opts.use_color);
-
-        // Advance rotation
-        A_ += opts.rotate_x ? 0.04f * opts.speed : 0.0f;
-        B_ += opts.rotate_y ? 0.06f * opts.speed : 0.0f;
 
         usleep(50000);
     }
