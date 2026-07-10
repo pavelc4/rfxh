@@ -86,6 +86,7 @@ else()
 endif()
 
 target_include_directories(rfxh PRIVATE src)
+target_compile_options(rfxh PRIVATE -Wno-trigraphs)
 
 if(NOT WIN32)
     target_link_libraries(rfxh PRIVATE m)
