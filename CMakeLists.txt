@@ -7,6 +7,18 @@ project(rfxh LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif()
+
+if(CMAKE_BUILD_TYPE MATCHES Release AND NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    include(CheckIPOSupported)
+    check_ipo_supported(RESULT ipo_supported)
+    if(ipo_supported)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+    endif()
+endif()
+
 # Platform detection
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set(RFXH_PLATFORM win32)
