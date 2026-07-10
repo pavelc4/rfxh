@@ -41,6 +41,7 @@ add_executable(rfxh
     src/render/pointcloud.cpp
     src/render/rasterizer.cpp
     src/render/output.cpp
+    src/engine/app.cpp
 )
 
 target_include_directories(rfxh PRIVATE src)
