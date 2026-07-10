@@ -32,6 +32,13 @@ DistroColors get_distro_colors(const char* distro) {
                platform::case_insensitive_cmp(distro, "opensuse-leap") == 0 ||
                platform::case_insensitive_cmp(distro, "opensuse") == 0) {
         c.outer = "\033[1;32m"; c.inner = "\033[1;37m";
+    } else if (strncasecmp(distro, "android", 7) == 0) {
+        c.outer = "\033[1;32m"; c.inner = "\033[1;37m";
+    } else if (strncasecmp(distro, "lineage", 7) == 0) {
+        c.outer = "\033[1;36m"; c.inner = "\033[1;37m";
+    } else if (platform::case_insensitive_cmp(distro, "grapheneos") == 0 ||
+               platform::case_insensitive_cmp(distro, "bugdroid") == 0) {
+        c.outer = "\033[1;32m"; c.inner = "\033[1;37m";
     }
     return c;
 }
