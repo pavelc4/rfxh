@@ -20,6 +20,24 @@ add_executable(rfxh
     src/logo/processor.cpp
     src/logo/detect.cpp
     src/logo/colors.cpp
+    src/gather/gather.cpp
+    src/gather/system/os.cpp
+    src/gather/system/host.cpp
+    src/gather/system/kernel.cpp
+    src/gather/system/uptime.cpp
+    src/gather/system/packages.cpp
+    src/gather/system/shell.cpp
+    src/gather/system/locale.cpp
+    src/gather/hardware/display.cpp
+    src/gather/hardware/cpu.cpp
+    src/gather/hardware/gpu.cpp
+    src/gather/hardware/memory.cpp
+    src/gather/hardware/disk.cpp
+    src/gather/hardware/battery.cpp
+    src/gather/desktop/wm.cpp
+    src/gather/desktop/terminal_info.cpp
+    src/gather/desktop/net.cpp
+    src/gather/desktop/gtk.cpp
 )
 
 target_include_directories(rfxh PRIVATE src)
