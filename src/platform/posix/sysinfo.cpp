@@ -13,6 +13,12 @@
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 
+#ifdef __APPLE__
+#include <sys/sysctl.h>
+#include <mach/mach_host.h>
+#include <mach/host_priv.h>
+#endif
+
 namespace rfxh::platform {
 
 // Helper: read first line from file
@@ -21,7 +27,6 @@ static std::string read_first_line(const char* path) {
     if (!fp) return "";
     char buf[512];
     if (std::fgets(buf, sizeof(buf), fp)) {
-        // Trim newline
         char* p = buf;
         while (*p && *p != '\n' && *p != '\r') p++;
         *p = '\0';
@@ -41,7 +46,6 @@ static std::string read_os_release_key(const char* key) {
     while (std::fgets(buf, sizeof(buf), fp)) {
         if (std::strncmp(buf, key, klen) == 0 && buf[klen] == '=') {
             const char* val = buf + klen + 1;
-            // Strip quotes
             if (*val == '"' || *val == '\'') {
                 char q = *val++;
                 const char* end = val;
@@ -61,6 +65,30 @@ static std::string read_os_release_key(const char* key) {
     std::fclose(fp);
     return "";
 }
+
+#ifdef __APPLE__
+// macOS: read sysctl string
+static std::string sysctl_str(const char* name) {
+    size_t size = 0;
+    if (sysctlbyname(name, nullptr, &size, nullptr, 0) != 0 || size == 0)
+        return "";
+    std::string buf(size, '\0');
+    if (sysctlbyname(name, buf.data(), &size, nullptr, 0) != 0)
+        return "";
+    // Trim trailing null/newline
+    while (!buf.empty() && (buf.back() == '\0' || buf.back() == '\n' || buf.back() == '\r'))
+        buf.pop_back();
+    return buf;
+}
+
+// macOS: read sysctl int64
+static long sysctl_int(const char* name) {
+    long val = 0;
+    size_t size = sizeof(val);
+    sysctlbyname(name, &val, &size, nullptr, 0);
+    return val;
+}
+#endif
 
 // Helper: count subdirectories
 static int count_subdirs(const char* path) {
@@ -92,15 +120,23 @@ static int count_file_lines(const char* path, const char* prefix) {
 
 OsInfo get_os_info() {
     OsInfo info;
+
+#ifdef __APPLE__
+    info.name = sysctl_str("kern.osproductname");
+    if (info.name.empty()) info.name = "macOS";
+    info.version = sysctl_str("kern.osproductversion");
+    info.id = "darwin";
+    info.id_like = "bsd";
+#else
     info.name = read_os_release_key("NAME");
     info.version = read_os_release_key("VERSION_ID");
     info.id = read_os_release_key("ID");
     info.id_like = read_os_release_key("ID_LIKE");
-
     if (info.name.empty()) {
         info.name = "Linux";
         info.id = "linux";
     }
+#endif
     return info;
 }
 
@@ -111,25 +147,24 @@ HostInfo get_host_info() {
     if (gethostname(hostname, sizeof(hostname)) == 0)
         info.hostname = hostname;
 
+#ifdef __APPLE__
+    info.product = sysctl_str("hw.model");
+#else
     // Try ARM device tree first
     auto model = read_first_line("/proc/device-tree/model");
     if (!model.empty()) {
         info.product = model;
         return info;
     }
-
     // Try DMI
     auto dmi = read_first_line("/sys/class/dmi/id/product_name");
     if (!dmi.empty()) {
         info.product = dmi;
         return info;
     }
-
-    // Fallback: fastfetch
     auto ff = run_command("fastfetch --format '{system.productName}' --pipe false 2>/dev/null");
-    if (!ff.empty())
-        info.product = ff;
-
+    if (!ff.empty()) info.product = ff;
+#endif
     return info;
 }
 
@@ -141,12 +176,21 @@ std::string get_kernel_version() {
 }
 
 std::string get_uptime() {
+#ifdef __APPLE__
+    // macOS: get boot time from sysctl
+    long boot_time = sysctl_int("kern.boottime");
+    if (boot_time == 0) return "unknown";
+
+    long now = 0;
+    time(&now);
+    float uptime_secs = static_cast<float>(now - boot_time);
+#else
     FILE* fp = std::fopen("/proc/uptime", "r");
     if (!fp) return "unknown";
-
     float uptime_secs = 0;
     std::fscanf(fp, "%f", &uptime_secs);
     std::fclose(fp);
+#endif
 
     int days = static_cast<int>(uptime_secs / 86400);
     int hours = static_cast<int>(fmod(uptime_secs / 3600, 24));
@@ -160,6 +204,18 @@ std::string get_uptime() {
 }
 
 int get_package_count() {
+#ifdef __APPLE__
+    // macOS: count Homebrew packages
+    auto ff = run_command("brew list 2>/dev/null | wc -l");
+    if (!ff.empty()) {
+        try { return std::stoi(ff); }
+        catch (...) {}
+    }
+    // Count MacPorts
+    int macports = count_subdirs("/opt/local/var/macports/software");
+    if (macports > 0) return macports;
+    return 0;
+#else
     int total = 0;
 
     // Gentoo (emerge)
@@ -192,14 +248,13 @@ int get_package_count() {
     total = count_file_lines("/lib/apk/db/installed", "P:");
     if (total > 0) return total;
 
-    // Fallback: fastfetch
     auto ff = run_command("fastfetch --format '{pkg.numPackages}' --pipe false 2>/dev/null");
     if (!ff.empty()) {
         try { return std::stoi(ff); }
         catch (...) {}
     }
-
     return 0;
+#endif
 }
 
 std::string get_shell_info() {
@@ -209,7 +264,6 @@ std::string get_shell_info() {
     std::string cmd = std::string(shell) + " --version 2>/dev/null";
     auto ver = run_command(cmd.c_str());
     if (!ver.empty()) {
-        // Extract first line
         auto nl = ver.find('\n');
         if (nl != std::string::npos) ver = ver.substr(0, nl);
         return ver;
@@ -220,12 +274,26 @@ std::string get_shell_info() {
 std::string get_locale() {
     const char* lang = std::getenv("LANG");
     if (!lang) lang = std::getenv("LC_ALL");
+#ifdef __APPLE__
+    if (!lang) {
+        // macOS: read from defaults
+        auto loc = run_command("defaults read -g AppleLocale 2>/dev/null");
+        if (!loc.empty()) return loc;
+    }
+#endif
     return lang ? lang : "unknown";
 }
 
 CpuInfo get_cpu_info() {
     CpuInfo info;
 
+#ifdef __APPLE__
+    info.model = sysctl_str("machdep.cpu.brand_string");
+    info.cores = static_cast<int>(sysctl_int("hw.physicalcpu"));
+    info.threads = static_cast<int>(sysctl_int("hw.logicalcpu"));
+    long freq_hz = sysctl_int("hw.cpufrequency");
+    if (freq_hz > 0) info.freq_mhz = freq_hz / 1000000.0f;
+#else
     FILE* fp = std::fopen("/proc/cpuinfo", "r");
     if (!fp) return info;
 
@@ -240,19 +308,16 @@ CpuInfo get_cpu_info() {
                 info.model.assign(p, end);
             }
         }
-        if (std::strncmp(buf, "cpu cores", 9) == 0) {
+        if (std::strncmp(buf, "cpu cores", 9) == 0)
             std::sscanf(buf + 11, "%d", &info.cores);
-        }
-        if (std::strncmp(buf, "siblings", 8) == 0) {
+        if (std::strncmp(buf, "siblings", 8) == 0)
             std::sscanf(buf + 10, "%d", &info.threads);
-        }
     }
     std::fclose(fp);
 
     if (info.threads == 0) info.threads = info.cores;
     if (info.cores == 0) info.cores = 1;
 
-    // Try to get frequency
     DIR* d = opendir("/sys/devices/system/cpu/cpufreq");
     if (d) {
         struct dirent* e;
@@ -275,26 +340,33 @@ CpuInfo get_cpu_info() {
         closedir(d);
     }
 
-    // Fallback: ARM device tree
     if (info.freq_mhz == 0) {
         auto model = read_first_line("/proc/device-tree/model");
         if (!model.empty() && info.model.empty())
             info.model = model;
     }
-
+#endif
     return info;
 }
 
 GpuInfo get_gpu_info() {
     GpuInfo info;
 
+#ifdef __APPLE__
+    // macOS: use system_profiler
+    auto ff = run_command("system_profiler SPDisplaysDataType 2>/dev/null | grep 'Chipset Model' | head -1 | sed 's/.*: //'");
+    if (!ff.empty()) {
+        info.model = ff;
+        return info;
+    }
+    info.model = sysctl_str("hw.model");
+#else
     auto ff = run_command("lspci -d ::0300 2>/dev/null | head -1 | sed 's/.*: //'");
     if (!ff.empty()) {
         info.model = ff;
         return info;
     }
 
-    // Try /sys/class/drm
     DIR* d = opendir("/sys/class/drm");
     if (d) {
         struct dirent* e;
@@ -308,10 +380,8 @@ GpuInfo get_gpu_info() {
                 char buf[512];
                 while (std::fgets(buf, sizeof(buf), fp)) {
                     if (std::strncmp(buf, "PCI_ID=", 7) == 0) {
-                        // Parse vendor:device
                         unsigned vendor = 0, device = 0;
                         std::sscanf(buf + 7, "%X:%X", &vendor, &device);
-                        // Could look up name but for now just note it
                     }
                 }
                 std::fclose(fp);
@@ -321,20 +391,45 @@ GpuInfo get_gpu_info() {
         closedir(d);
     }
 
-    // Fallback: ARM device tree
     auto model = read_first_line("/proc/device-tree/model");
     if (!model.empty()) {
         info.model = model;
         return info;
     }
-
     info.model = "unknown";
+#endif
     return info;
 }
 
 MemoryInfo get_memory_info() {
     MemoryInfo info;
 
+#ifdef __APPLE__
+    // macOS: use sysctl for total, vm_stat for used
+    long total_bytes = sysctl_int("hw.memsize");
+    info.total_mb = total_bytes / (1024.0f * 1024.0f);
+
+    // vm_stat for free pages
+    vm_statistics_data_t vm_stat;
+    mach_msg_type_number_t count = HOST_VM_INFO_COUNT;
+    if (host_statistics(mach_host_self(), HOST_VM_INFO,
+                       reinterpret_cast<integer_t*>(&vm_stat), &count) == KERN_SUCCESS) {
+        long free_bytes = vm_stat.free_count * vm_page_size;
+        info.used_mb = (total_bytes - free_bytes) / (1024.0f * 1024.0f);
+    }
+    // Swap: use sysctl
+    long swap_total = sysctl_int("vm.swapusage");
+    long swap_used = sysctl_int("vm.swapusage"); // swapusage returns total+used
+    // Actually vm.swapusage format is "total = X, used = Y, ..."
+    auto swap_line = run_command("sysctl vm.swapusage 2>/dev/null");
+    if (!swap_line.empty()) {
+        float st = 0, su = 0;
+        if (std::sscanf(swap_line.c_str(), "vm.swapusage: total = %f M, used = %f M", &st, &su) == 2) {
+            info.swap_total_mb = st;
+            info.swap_used_mb = su;
+        }
+    }
+#else
     FILE* fp = std::fopen("/proc/meminfo", "r");
     if (!fp) return info;
 
@@ -355,6 +450,7 @@ MemoryInfo get_memory_info() {
             info.swap_used_mb = (info.swap_total_mb * 1024.0f - val) / 1024.0f;
     }
     std::fclose(fp);
+#endif
     return info;
 }
 
@@ -375,6 +471,23 @@ BatteryInfo get_battery_info() {
     BatteryInfo info;
     info.capacity = -1;
 
+#ifdef __APPLE__
+    // macOS: use ioreg for battery info
+    auto ff = run_command("ioreg -r -c AppleSmartBattery 2>/dev/null | grep 'MaxCapacity' | head -1 | sed 's/.*= //'");
+    if (!ff.empty()) {
+        int max_cap = 0;
+        try { max_cap = std::stoi(ff); } catch (...) {}
+        auto ff2 = run_command("ioreg -r -c AppleSmartBattery 2>/dev/null | grep 'CurrentCapacity' | head -1 | sed 's/.*= //'");
+        int cur_cap = 0;
+        if (!ff2.empty()) {
+            try { cur_cap = std::stoi(ff2); } catch (...) {}
+        }
+        if (max_cap > 0) {
+            info.capacity = (cur_cap * 100) / max_cap;
+            info.status = (info.capacity >= 100) ? "Full" : "Discharging";
+        }
+    }
+#else
     DIR* d = opendir("/sys/class/power_supply");
     if (!d) return info;
 
@@ -385,7 +498,6 @@ BatteryInfo get_battery_info() {
         char path[256];
         int val = 0;
 
-        // Try capacity
         std::snprintf(path, sizeof(path), "/sys/class/power_supply/%s/capacity", e->d_name);
         FILE* fp = std::fopen(path, "r");
         if (fp) {
@@ -394,7 +506,6 @@ BatteryInfo get_battery_info() {
             if (val > 0 && val <= 100) {
                 info.capacity = val;
 
-                // Get energy/charge info
                 for (const char* suffix : {"energy_now", "charge_now"}) {
                     std::snprintf(path, sizeof(path), "/sys/class/power_supply/%s/%s",
                                  e->d_name, suffix);
@@ -414,7 +525,6 @@ BatteryInfo get_battery_info() {
                     }
                 }
 
-                // Status
                 std::snprintf(path, sizeof(path), "/sys/class/power_supply/%s/status", e->d_name);
                 fp = std::fopen(path, "r");
                 if (fp) {
@@ -432,12 +542,23 @@ BatteryInfo get_battery_info() {
         }
     }
     closedir(d);
+#endif
     return info;
 }
 
 DisplayInfo get_display_info() {
     DisplayInfo info;
 
+#ifdef __APPLE__
+    // macOS: use system_profiler
+    auto name = run_command("system_profiler SPDisplaysDataType 2>/dev/null | grep 'Display Type' | head -1 | sed 's/.*: //'");
+    if (!name.empty()) info.name = name;
+    else info.name = "Built-in";
+
+    auto res = run_command("system_profiler SPDisplaysDataType 2>/dev/null | grep 'Resolution' | head -1 | sed 's/.*: //' | sed 's/ (.*//'");
+    if (!res.empty()) info.resolution = res;
+    info.status = "connected";
+#else
     DIR* d = opendir("/sys/class/drm");
     if (!d) return info;
 
@@ -448,8 +569,6 @@ DisplayInfo get_display_info() {
         if (!dash) continue;
 
         char path[256];
-
-        // Check status
         std::snprintf(path, sizeof(path), "/sys/class/drm/%s/status", e->d_name);
         FILE* fp = std::fopen(path, "r");
         if (fp) {
@@ -464,8 +583,6 @@ DisplayInfo get_display_info() {
 
             if (info.status == "connected") {
                 info.name = dash + 1;
-
-                // Get preferred mode
                 std::snprintf(path, sizeof(path), "/sys/class/drm/%s/modes", e->d_name);
                 fp = std::fopen(path, "r");
                 if (fp) {
@@ -482,30 +599,28 @@ DisplayInfo get_display_info() {
         }
     }
     closedir(d);
+#endif
     return info;
 }
 
 std::string get_wm_info() {
-    // Check Wayland
+#ifdef __APPLE__
+    return "Quartz Compositor";
+#else
     const char* wayland = std::getenv("WAYLAND_DISPLAY");
     if (wayland) {
         const char* xdg = std::getenv("XDG_CURRENT_DESKTOP");
         if (xdg) return xdg;
-
-        // Try hyprland
         const char* hipc = std::getenv("HYPRLAND_INSTANCE_SIGNATURE");
         if (hipc) return "Hyprland";
-
         return "Wayland";
     }
 
-    // Check X11
     const char* xdg = std::getenv("XDG_CURRENT_DESKTOP");
     if (xdg) return xdg;
 
     const char* xsession = std::getenv("XDG_SESSION_TYPE");
     if (xsession && std::string(xsession) == "x11") {
-        // Try to find WM from /proc
         DIR* proc = opendir("/proc");
         if (proc) {
             struct dirent* e;
@@ -520,10 +635,6 @@ std::string get_wm_info() {
                         char* p = buf;
                         while (*p && *p != '\n') p++;
                         *p = '\0';
-                        if (std::string(buf) == "Xorg" ||
-                            std::string(buf) == "XWayland") {
-                            // Read WM from xprop or similar
-                        }
                     }
                     std::fclose(fp);
                 }
@@ -532,11 +643,16 @@ std::string get_wm_info() {
         }
         return "X11";
     }
-
     return "unknown";
+#endif
 }
 
 std::string get_theme_info() {
+#ifdef __APPLE__
+    auto style = run_command("defaults read -g AppleInterfaceStyle 2>/dev/null");
+    if (!style.empty()) return style;
+    return "Light";
+#else
     const char* home = std::getenv("HOME");
     if (!home) return "unknown";
 
@@ -558,14 +674,16 @@ std::string get_theme_info() {
     }
     std::fclose(fp);
     return "unknown";
+#endif
 }
 
 std::string get_icons_info() {
-    // Try environment variable first
+#ifdef __APPLE__
+    return "macOS";
+#else
     const char* icons = std::getenv("GTK_ICON_THEME");
     if (icons) return icons;
 
-    // Try reading from settings.ini
     const char* home = std::getenv("HOME");
     if (!home) return "unknown";
 
@@ -587,9 +705,15 @@ std::string get_icons_info() {
     }
     std::fclose(fp);
     return "unknown";
+#endif
 }
 
 std::string get_font_info() {
+#ifdef __APPLE__
+    auto font = run_command("defaults read -g NSFixedPitchFont 2>/dev/null");
+    if (!font.empty()) return font;
+    return "SF Mono";
+#else
     const char* home = std::getenv("HOME");
     if (!home) return "unknown";
 
@@ -611,10 +735,10 @@ std::string get_font_info() {
     }
     std::fclose(fp);
     return "unknown";
+#endif
 }
 
 std::string get_terminal_info() {
-    // Check env vars for known terminals
     const char* tp = std::getenv("TERM_PROGRAM");
     if (tp) return tp;
 
@@ -624,7 +748,10 @@ std::string get_terminal_info() {
     if (std::getenv("GHOSTTY_RESOURCES_DIR")) return "Ghostty";
     if (std::getenv("TERMINAL_EMULATOR")) return "JetBrains";
 
-    // Try reading /proc/self/comm
+#ifdef __APPLE__
+    // macOS: no /proc, try to get process name via other means
+    return "unknown";
+#else
     char path[256];
     std::snprintf(path, sizeof(path), "/proc/%d/comm", getpid());
     FILE* fp = std::fopen(path, "r");
@@ -639,8 +766,8 @@ std::string get_terminal_info() {
         }
         std::fclose(fp);
     }
-
     return "unknown";
+#endif
 }
 
 std::string get_ip_address() {
@@ -652,7 +779,6 @@ std::string get_ip_address() {
         if (!ifa->ifa_addr) continue;
         if (ifa->ifa_addr->sa_family != AF_INET) continue;
 
-        // Skip loopback
         char addr[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr,
                   addr, sizeof(addr));
