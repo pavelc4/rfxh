@@ -11,6 +11,7 @@ add_executable(rfxh
     src/main.cpp
     src/terminal/terminal.cpp
     src/config/defaults.cpp
+    src/config/cli.cpp
 )
 
 target_include_directories(rfxh PRIVATE src)
