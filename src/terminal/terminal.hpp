@@ -18,5 +18,6 @@ namespace rfxh::terminal {
 
     void install_signal_handlers();
     bool consume_resize_flag();
+    int get_term_rows();
 
 } // namespace rfxh::terminal

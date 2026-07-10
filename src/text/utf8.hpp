@@ -13,4 +13,15 @@ namespace rfxh::text {
         return 4;
       return 1;
     }
+
+    static int skip_ansi(const char *p) {
+      if (p[0] != '\033' || p[1] != '[')
+        return 0;
+      int i = 2;
+      while (p[i] && ((p[i] >= '0' && p[i] <= '9') || p[i] == ';'))
+        i++;
+      if (p[i])
+        i++;
+      return i;
+    }
 }

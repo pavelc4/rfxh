@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <sys/ioctl.h>
 #include <csignal>
 #include <termios.h>
 #include <unistd.h>
@@ -75,6 +76,13 @@ namespace rfxh::terminal {
         std::signal(SIGINT, handle_signal);
         std::signal(SIGTERM, handle_signal);
         std::signal(SIGWINCH, handle_winch);
+    }
+
+    int get_term_rows() {
+        struct winsize ws;
+        if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == 0 && ws.ws_row > 0)
+            return ws.ws_row;
+        return 0;
     }
 
     bool consume_resize_flag() {
