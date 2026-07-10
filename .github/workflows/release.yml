@@ -107,7 +107,7 @@ jobs:
         run: |
           cmake -B build \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_TOOLCHAIN_FILE="${{ steps.setup_ndk.outputs.ANDROID_NDK_HOME }}/build/cmake/android.toolchain.cmake" \
+            -DCMAKE_TOOLCHAIN_FILE="${{ steps.setup_ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake" \
             -DANDROID_ABI=${{ matrix.ndk_abi }} \
             -DANDROID_PLATFORM=android-24
 
@@ -125,15 +125,23 @@ jobs:
 
       - name: Compute SHA256
         run: |
-          sha256sum "build/${{ matrix.binary }}" > "build/${{ matrix.binary }}.sha256"
+          if command -v sha256sum &> /dev/null; then
+            sha256sum "build/${{ matrix.binary }}" > "build/${{ matrix.binary }}.sha256"
+          else
+            shasum -a 256 "build/${{ matrix.binary }}" > "build/${{ matrix.binary }}.sha256"
+          fi
+
+      - name: Stage Artifacts
+        run: |
+          mkdir -p dist
+          cp "build/${{ matrix.binary }}" dist/
+          cp "build/${{ matrix.binary }}.sha256" dist/
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact }}
-          path: |
-            build/${{ matrix.binary }}
-            build/${{ matrix.binary }}.sha256
+          path: dist/
 
   release:
     needs: [setup, build]
@@ -150,34 +158,30 @@ jobs:
         with:
           path: artifacts/
 
-      - name: Prepare Release Package
-        run: |
-          mkdir -p release
-          find artifacts/ -type f -name "rfxh*" | while read f; do
-            dir=$(basename "$(dirname "$f")")
-            cp "$f" "release/$dir-$(basename "$f")"
-          done
-
-      - name: Create Release Archive
-        run: |
-          RELEASE_NAME="rfxh-${{ github.ref_name }}"
-          mkdir -p "$RELEASE_NAME"
-          find release/ -type f -exec cp {} "$RELEASE_NAME/" \;
-          cp README.md "$RELEASE_NAME/" 2>/dev/null || true
-          zip -r "${RELEASE_NAME}.zip" "$RELEASE_NAME/"
-          echo "release_zip=${RELEASE_NAME}.zip" >> $GITHUB_ENV
-
       - name: Resolve Tag
         id: resolve_tag
         run: echo "tag=${{ inputs.tag || github.ref_name }}" >> $GITHUB_OUTPUT
+
+      - name: Prepare Release Package
+        run: |
+          mkdir -p release
+          find artifacts/ -type f ! -name "*.sha256" | while read f; do
+            dir=$(basename "$(dirname "$f")")
+            cp "$f" "release/$dir"
+            cd release
+            if command -v sha256sum &> /dev/null; then
+              sha256sum "$dir" > "$dir.sha256"
+            else
+              shasum -a 256 "$dir" > "$dir.sha256"
+            fi
+            cd ..
+          done
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.resolve_tag.outputs.tag }}
-          files: |
-            ${{ env.release_zip }}
-            artifacts/**/*.sha256
+          files: release/*
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
