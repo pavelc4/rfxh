@@ -16,6 +16,10 @@ add_executable(rfxh
     src/config/defaults.cpp
     src/config/cli.cpp
     src/config/loader.cpp
+    src/logo/loader.cpp
+    src/logo/processor.cpp
+    src/logo/detect.cpp
+    src/logo/colors.cpp
 )
 
 target_include_directories(rfxh PRIVATE src)
