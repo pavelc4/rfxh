@@ -1,0 +1,96 @@
+name: Telegram Notify
+description: Send build/release notifications to Telegram
+
+inputs:
+  bot_token:
+    description: Telegram Bot Token
+    required: true
+  chat_id:
+    description: Telegram Chat ID
+    required: true
+  type:
+    description: Notification type (start, complete, failure)
+    required: true
+    default: complete
+  binary_file:
+    description: Path to binary file (for complete notification)
+    required: false
+    default: ""
+  delete_message_id:
+    description: Message ID to delete after sending
+    required: false
+    default: ""
+  caption:
+    description: Custom caption override
+    required: false
+    default: ""
+
+outputs:
+  message_id:
+    description: Sent message ID (for later deletion)
+    value: ${{ steps.send.outputs.message_id }}
+
+runs:
+  using: composite
+  steps:
+    - name: Send Notification
+      id: send
+      shell: bash
+      env:
+        BOT_TOKEN: ${{ inputs.bot_token }}
+        CHAT_ID: ${{ inputs.chat_id }}
+        NOTIFY_TYPE: ${{ inputs.type }}
+        BINARY_PATH: ${{ inputs.binary_file }}
+        DELETE_MSG_ID: ${{ inputs.delete_message_id }}
+        CUSTOM_CAPTION: ${{ inputs.caption }}
+        RUN_NUMBER: ${{ github.run_number }}
+        COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
+        WORKFLOW_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      run: |
+        COMMIT_MSG=$(git log -1 --pretty=%s 2>/dev/null || echo "")
+
+        if [ "$NOTIFY_TYPE" = "start" ]; then
+          MESSAGE=$(printf "<b>rfxh</b> #ci_%s\n\n<blockquote><code>%s</code></blockquote>\n\n<a href=\"%s\">Commit</a> \342\200\242 <a href=\"%s\">Workflow</a>" "$RUN_NUMBER" "$COMMIT_MSG" "$COMMIT_URL" "$WORKFLOW_URL")
+          RESPONSE=$(curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendMessage" \
+            -d chat_id="$CHAT_ID" \
+            --data-urlencode "text=$MESSAGE" \
+            -d parse_mode="HTML" \
+            -d disable_web_page_preview="true")
+          MESSAGE_ID=$(echo "$RESPONSE" | grep -o '"message_id":[0-9]*' | cut -d: -f2)
+          echo "message_id=$MESSAGE_ID" >> $GITHUB_OUTPUT
+
+        elif [ "$NOTIFY_TYPE" = "complete" ]; then
+          if [ -z "$CUSTOM_CAPTION" ]; then
+            CAPTION=$(printf "<b>rfxh</b> #ci_%s\n\n<blockquote><code>%s</code></blockquote>\n\n<a href=\"%s\">Commit</a> \342\200\242 <a href=\"%s\">Workflow</a>" "$RUN_NUMBER" "$COMMIT_MSG" "$COMMIT_URL" "$WORKFLOW_URL")
+          else
+            CAPTION="$CUSTOM_CAPTION"
+          fi
+
+          if [ -n "$BINARY_PATH" ] && [ -f "$BINARY_PATH" ]; then
+            curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendDocument" \
+              -F chat_id="$CHAT_ID" \
+              -F document=@"$BINARY_PATH" \
+              -F parse_mode="HTML" \
+              --form-string "caption=$CAPTION"
+          else
+            curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendMessage" \
+              -d chat_id="$CHAT_ID" \
+              --data-urlencode "text=$CAPTION" \
+              -d parse_mode="HTML" \
+              -d disable_web_page_preview="true"
+          fi
+
+        elif [ "$NOTIFY_TYPE" = "failure" ]; then
+          MESSAGE=$(printf "<b>rfxh</b> #ci_%s\n\n\342\235\214 <b>FAILED</b>\n\n<blockquote><code>%s</code></blockquote>\n\n<a href=\"%s\">Commit</a> \342\200\242 <a href=\"%s\">Workflow</a>" "$RUN_NUMBER" "$COMMIT_MSG" "$COMMIT_URL" "$WORKFLOW_URL")
+          curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendMessage" \
+            -d chat_id="$CHAT_ID" \
+            --data-urlencode "text=$MESSAGE" \
+            -d parse_mode="HTML" \
+            -d disable_web_page_preview="true"
+        fi
+
+        if [ -n "$DELETE_MSG_ID" ]; then
+          curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/deleteMessage" \
+            -d chat_id="$CHAT_ID" \
+            -d message_id="$DELETE_MSG_ID" > /dev/null 2>&1
+        fi

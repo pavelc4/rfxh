@@ -1,0 +1,143 @@
+name: Build rfxh
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+  CHAT_ID: ${{ secrets.CHAT_ID }}
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      notify_message_id: ${{ steps.notify_start.outputs.message_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Notify Build Start
+        if: ${{ env.BOT_TOKEN != '' }}
+        id: notify_start
+        uses: ./.github/actions/telegram-notify
+        with:
+          bot_token: ${{ secrets.BOT_TOKEN }}
+          chat_id: ${{ secrets.CHAT_ID }}
+          type: start
+
+  build:
+    needs: setup
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-linux
+            binary: rfxh
+            artifact: rfxh-linux-x86_64
+            strip: true
+          - os: macos-latest
+            target: x86_64-macos
+            binary: rfxh
+            artifact: rfxh-macos-x86_64
+            strip: true
+          - os: macos-latest
+            target: arm64-macos
+            binary: rfxh
+            artifact: rfxh-macos-arm64
+            strip: true
+            cmake_flags: -DCMAKE_SYSTEM_PROCESSOR=arm64
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Dependencies (Linux)
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake build-essential
+
+      - name: Install Dependencies (macOS)
+        if: ${{ startsWith(matrix.os, 'macos') }}
+        run: |
+          brew update
+          brew install cmake || true
+
+      - name: Configure CMake
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            ${{ matrix.cmake_flags }}
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Strip Binary (POSIX)
+        if: ${{ matrix.strip && runner.os != 'Windows' }}
+        run: |
+          if command -v llvm-strip &> /dev/null; then
+            llvm-strip --strip-all "build/${{ matrix.binary }}"
+          else
+            strip --strip-all "build/${{ matrix.binary }}" || true
+          fi
+
+      - name: Compute SHA256
+        run: |
+          sha256sum "build/${{ matrix.binary }}" > "build/${{ matrix.binary }}.sha256"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            build/${{ matrix.binary }}
+            build/${{ matrix.binary }}.sha256
+
+  notify:
+    if: ${{ !cancelled() && env.BOT_TOKEN != '' }}
+    needs: [setup, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Linux Binary
+        if: ${{ needs.build.result == 'success' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: rfxh-linux-x86_64
+          path: artifacts/
+
+      - name: Prepare Binary for Telegram
+        if: ${{ needs.build.result == 'success' }}
+        run: |
+          cd artifacts
+          gzip -c rfxh > rfxh.gz
+          echo "binary_path=$(pwd)/rfxh.gz" >> $GITHUB_ENV
+
+      - name: Notify Success
+        if: ${{ needs.build.result == 'success' && needs.setup.outputs.notify_message_id != '' }}
+        uses: ./.github/actions/telegram-notify
+        with:
+          bot_token: ${{ secrets.BOT_TOKEN }}
+          chat_id: ${{ secrets.CHAT_ID }}
+          type: complete
+          binary_file: ${{ env.binary_path }}
+          delete_message_id: ${{ needs.setup.outputs.notify_message_id }}
+
+      - name: Notify Failure
+        if: ${{ needs.build.result != 'success' && needs.setup.outputs.notify_message_id != '' }}
+        uses: ./.github/actions/telegram-notify
+        with:
+          bot_token: ${{ secrets.BOT_TOKEN }}
+          chat_id: ${{ secrets.CHAT_ID }}
+          type: failure
+          delete_message_id: ${{ needs.setup.outputs.notify_message_id }}

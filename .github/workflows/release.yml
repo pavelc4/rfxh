@@ -1,0 +1,184 @@
+name: Release rfxh
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+  CHAT_ID: ${{ secrets.CHAT_ID }}
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      notify_message_id: ${{ steps.notify_start.outputs.message_id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Notify Release Start
+        if: ${{ env.BOT_TOKEN != '' }}
+        id: notify_start
+        uses: ./.github/actions/telegram-notify
+        with:
+          bot_token: ${{ secrets.BOT_TOKEN }}
+          chat_id: ${{ secrets.CHAT_ID }}
+          type: start
+
+  build:
+    needs: setup
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-linux
+            binary: rfxh
+            artifact: rfxh-linux-x86_64
+            strip: true
+            compress_ext: ""
+          - os: macos-latest
+            target: x86_64-macos
+            binary: rfxh
+            artifact: rfxh-macos-x86_64
+            strip: true
+            compress_ext: ""
+          - os: macos-latest
+            target: arm64-macos
+            binary: rfxh
+            artifact: rfxh-macos-arm64
+            strip: true
+            cmake_flags: -DCMAKE_SYSTEM_PROCESSOR=arm64
+            compress_ext: ""
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Dependencies (Linux)
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake build-essential
+
+      - name: Install Dependencies (macOS)
+        if: ${{ startsWith(matrix.os, 'macos') }}
+        run: |
+          brew update
+          brew install cmake || true
+
+      - name: Configure CMake
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            ${{ matrix.cmake_flags }}
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Strip Binary
+        if: ${{ matrix.strip }}
+        run: |
+          if command -v llvm-strip &> /dev/null; then
+            llvm-strip --strip-all "build/${{ matrix.binary }}"
+          else
+            strip --strip-all "build/${{ matrix.binary }}" || true
+          fi
+
+      - name: Compute SHA256
+        run: |
+          sha256sum "build/${{ matrix.binary }}" > "build/${{ matrix.binary }}.sha256"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: |
+            build/${{ matrix.binary }}
+            build/${{ matrix.binary }}.sha256
+
+  release:
+    needs: [setup, build]
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.resolve_tag.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Prepare Release Package
+        run: |
+          mkdir -p release
+          find artifacts/ -type f -name "rfxh*" | while read f; do
+            dir=$(basename "$(dirname "$f")")
+            cp "$f" "release/$dir-$(basename "$f")"
+          done
+
+      - name: Create Release Archive
+        run: |
+          RELEASE_NAME="rfxh-${{ github.ref_name }}"
+          mkdir -p "$RELEASE_NAME"
+          find release/ -type f -exec cp {} "$RELEASE_NAME/" \;
+          cp README.md "$RELEASE_NAME/" 2>/dev/null || true
+          zip -r "${RELEASE_NAME}.zip" "$RELEASE_NAME/"
+          echo "release_zip=${RELEASE_NAME}.zip" >> $GITHUB_ENV
+
+      - name: Resolve Tag
+        id: resolve_tag
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.resolve_tag.outputs.tag }}
+          files: |
+            ${{ env.release_zip }}
+            artifacts/**/*.sha256
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  notify:
+    if: ${{ !cancelled() && env.BOT_TOKEN != '' }}
+    needs: [setup, release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Release Complete
+        if: ${{ needs.release.result == 'success' && needs.setup.outputs.notify_message_id != '' }}
+        uses: ./.github/actions/telegram-notify
+        with:
+          bot_token: ${{ secrets.BOT_TOKEN }}
+          chat_id: ${{ secrets.CHAT_ID }}
+          type: complete
+          delete_message_id: ${{ needs.setup.outputs.notify_message_id }}
+          caption: |
+            <b>rfxh ${{ github.ref_name }} Released!</b>
+
+            <a href="https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}">GitHub Release</a>
+
+      - name: Notify Failure
+        if: ${{ needs.release.result != 'success' && needs.setup.outputs.notify_message_id != '' }}
+        uses: ./.github/actions/telegram-notify
+        with:
+          bot_token: ${{ secrets.BOT_TOKEN }}
+          chat_id: ${{ secrets.CHAT_ID }}
+          type: failure
+          delete_message_id: ${{ needs.setup.outputs.notify_message_id }}
