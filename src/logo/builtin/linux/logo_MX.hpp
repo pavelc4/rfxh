@@ -1,0 +1,29 @@
+#pragma once
+#include <vector>
+#include <string>
+
+namespace rfxh::logo::builtin::linux {
+
+inline std::vector<std::string> logo_MX() {
+    return {
+        "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMNMMMMMMMMM",
+        "MMMMMMMMMMNs..yMMMMMMMMMMMMMm: +NMMMMMMM",
+        "MMMMMMMMMN+    :mMMMMMMMMMNo` -dMMMMMMMM",
+        "MMMMMMMMMMMs.   `oNMMMMMMh- `sNMMMMMMMMM",
+        "MMMMMMMMMMMMN/    -hMMMN+  :dMMMMMMMMMMM",
+        "MMMMMMMMMMMMMMh-    +ms. .sMMMMMMMMMMMMM",
+        "MMMMMMMMMMMMMMMN+`   `  +NMMMMMMMMMMMMMM",
+        "MMMMMMMMMMMMMMNMMd:    .dMMMMMMMMMMMMMMM",
+        "MMMMMMMMMMMMm/-hMd-     `sNMMMMMMMMMMMMM",
+        "MMMMMMMMMMNo`   -` :h/    -dMMMMMMMMMMMM",
+        "MMMMMMMMMd:       /NMMh-   `+NMMMMMMMMMM",
+        "MMMMMMMNo`         :mMMN+`   `-hMMMMMMMM",
+        "MMMMMMh.            `oNMMd:    `/mMMMMMM",
+        "MMMMm/                -hMd-      `sNMMMM",
+        "MMNs`                   -          :dMMM",
+        "Mm:                                 `oMM",
+        "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+    };
+}
+
+}

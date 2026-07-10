@@ -1,0 +1,33 @@
+#pragma once
+#include <vector>
+#include <string>
+
+namespace rfxh::logo::builtin::cat_linux {
+
+inline std::vector<std::string> logo_Slackware() {
+    return {
+        "                  :::::::::",
+        "            :::::::::::::::::::",
+        "         :::::::::::::::::::::::::",
+        "       ::::::::cllcccccllllllll::::::",
+        "    :::::::::lc               dc:::::::",
+        "   ::::::::cl   clllccllll    oc:::::::::",
+        "  :::::::::o   lc::::::::co   oc::::::::::",
+        " ::::::::::o    cccclc:::::clcc::::::::::::",
+        " :::::::::::lc        cclccclc:::::::::::::",
+        "::::::::::::::lcclcc          lc::::::::::::",
+        "::::::::::cclcc:::::lccclc     oc:::::::::::",
+        "::::::::::o    l::::::::::l    lc:::::::::::",
+        " :::::cll:o     clcllcccll     o:::::::::::",
+        " :::::occ:o                  clc:::::::::::",
+        "  ::::ocl:ccslclccclclccclclc:::::::::::::",
+        "   :::oclcccccccccccccllllllllllllll:::::",
+        "    ::lcc1lcccccccccccccccccccccccco::::",
+        "      ::::::::::::::::::::::::::::::::",
+        "        ::::::::::::::::::::::::::::",
+        "           ::::::::::::::::::::::",
+        "                ::::::::::::",
+    };
+}
+
+}

@@ -1,0 +1,30 @@
+#pragma once
+#include <vector>
+#include <string>
+
+namespace rfxh::logo::builtin::cat_linux {
+
+inline std::vector<std::string> logo_Serpent_OS() {
+    return {
+        "            ,dKNWWNKOxo;.",
+        "          ;xKXOdoloOWMWX0d:.",
+        "        .dNNd'     cNMMMMNKOx;.",
+        "       .dWNo       .:oxO000KXKl.",
+        "       .OMNl             .....",
+        "        oNMXd,.",
+        "        .lKWMNKkdollccc:::;;;,'..",
+        "          .;ox0KNWWMMMMMMMMWWWWNK0xl,.",
+        "               ..,;:ccloodxO0KNWMMMMNOc.",
+        "                             .';lxKWMMWk'",
+        "      ..,:ccc:,.                  .oXMMMO",
+        "   .:d0NWWWWWMWXOo,.     .,cc:;,,'..oWMMW",
+        " .c0WW0xl:;,;cd0NMNO:'..ldl;.    .'.:XMMM",
+        " xWMKc.        .;OWMWX0xl.         .dWMMK",
+        " WMWd.           .oKWMMXx,        .dNMMXc",
+        " NMMK:.      ..:oxo:oOXMMNOdc:;;cxKWMWO;",
+        " ;kXWN0xooodkOOko;.   .lONMMMMWWMMWKx;.",
+        "   ,okKXXXKOxc'.        .:kKWMMWXOl'",
+    };
+}
+
+}

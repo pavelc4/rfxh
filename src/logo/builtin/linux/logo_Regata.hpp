@@ -1,0 +1,32 @@
+#pragma once
+#include <vector>
+#include <string>
+
+namespace rfxh::logo::builtin::linux {
+
+inline std::vector<std::string> logo_Regata() {
+    return {
+        "            ddhso+++++osydd",
+        "        dho/.`hh.:/+/:.hhh`:+yd",
+        "      do-hhhhhh/sssssss+`hhhhh./yd",
+        "    h/`hhhhhhh-sssssssss:hhhhhhhh-yd",
+        "  do`hhhhhhhhh`ossssssso.hhhhhhhhhh/d",
+        " d/hhhhhhhhhhhh`/ossso/.hhhhhhhhhhhh.h",
+        " /hhhhhhhhhhhh`-/osyso/-`hhhhhhhhhhhh.h",
+        "shh-/ooo+-hhh:syyso+osyys/`hhh`+oo`hhh/",
+        "h`ohhhhhhho`+yyo.hhhhh.+yyo`.sssssss.h`h",
+        "s:hhhhhhhhhoyys`hhhhhhh.oyy/ossssssso-hs",
+        "s.yhhhhhhhy/yys`hhhhhhh.oyy/ossssssso-hs",
+        "hh./syyys+. +yy+.hhhhh.+yyo`.ossssso/h`h",
+        "shhh``.`hhh`/syyso++oyys/`hhh`+++-`hh:h",
+        "d/hhhhhhhhhhhh`-/osyso+-`hhhhhhhhhhhh.h",
+        " d/hhhhhhhhhhhh`/ossso/.hhhhhhhhhhhh.h",
+        "  do`hhhhhhhhh`ossssssso.hhhhhhhhhh:h",
+        "    h/`hhhhhhh-sssssssss:hhhhhhhh-yd",
+        "      h+.hhhhhh+sssssss+hhhhhh`/yd",
+        "        dho:.hhh.:+++/.hhh`-+yd",
+        "            ddhso+++++osyhd",
+    };
+}
+
+}

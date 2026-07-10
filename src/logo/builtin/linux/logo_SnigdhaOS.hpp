@@ -1,0 +1,32 @@
+#pragma once
+#include <vector>
+#include <string>
+
+namespace rfxh::logo::builtin::linux {
+
+inline std::vector<std::string> logo_SnigdhaOS() {
+    return {
+        "                   WK0OO0X",
+        "               WKOxk0XWNXkxN",
+        "           WXOxk0N        kk",
+        "        WKkxOXW          NxO",
+        "     NX0ddk00OOOOkkkkkkkkk0",
+        " WKkxO0dOXXNNNNWWW WXKK",
+        "NxkN   kxW       XOxxdN",
+        "KoX    WkxX    WkxK Xd0",
+        "WxkW     XkkX  kkW   NkxX",
+        " W0dK      XxOWkkW     XxkN",
+        "   NkxX     XoKWkxK      Kd0",
+        "     XkkN  WOdN  NkxX     NxO",
+        "       OxNKxOW     XdO     kk",
+        "       kdk0W        XoK WXkxN",
+        "   WNNXKXXXXKKKK000OOdxkk0X",
+        "  KdOO000KKKKXXXXX0xx0W",
+        " XoK          N0kx0N",
+        " Nd0      NKOxOKW",
+        "  Nkk0K0kxOKN",
+        "    WXXXN",
+    };
+}
+
+}

@@ -1,0 +1,23 @@
+#pragma once
+#include <vector>
+#include <string>
+
+namespace rfxh::logo::builtin::linux {
+
+inline std::vector<std::string> logo_Ironclad() {
+    return {
+        "                 &#BGPPPPPG#&",
+        "              B5?77!!?YJJ7!7YBB&",
+        "           &G5YJ77!7JYYYYYBPJ&PY#",
+        "         #PYYYYYY?!?YYYYY7?7JP5JJ",
+        "        B?YYYYYY7!!7JYYYYJ!!?JJJ5",
+        " &&    B7?J?77?7!!!!!77777!7Y5YYBBPGGG&",
+        "G77?YBB!!!!!!!!!!!!!JYJ??7JYJJY# PYPPG&",
+        "J777JB?!7JJ???!!!7?JYYYYYPJ!7JB",
+        "GYYG #JJJJJ??7!!!JYYY5PGB&GB&",
+        "   #Y!?GB5YYJY5PG###&",
+        "   GJJP",
+    };
+}
+
+}

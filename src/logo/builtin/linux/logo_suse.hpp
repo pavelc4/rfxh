@@ -1,0 +1,23 @@
+#pragma once
+#include <vector>
+#include <string>
+
+namespace rfxh::logo::builtin::linux {
+
+inline std::vector<std::string> logo_suse() {
+    return {
+        " kKKKKKd'  Okxol:;,.",
+        "kKKKKKKK0kOKKKKKKKKKKOxo:,",
+        "KKKKKKKKKKKKKKKKKKK0P^,,,^dx:",
+        "KKKKKKKKKKKKKKKKKKk'.oOPPb.'0k.",
+        "KKKKKKKKKKKKKKKKKK: kKx..dd lKd",
+        "KKKKKKKKKKKKOx0KKKd ^0KKKO' kKKc",
+        "KKKKKKKKKKKKK;.;oOKx,..^..;kKKK0.",
+        "KKKKKKKKKKKKK0o;...^cdxxOK0O/^^'",
+        "KKKKKKKKKKKKKKKKK0x;,,......,;od",
+        "kKKKKKKKKKKKKKKKKKKKKKKK00KKOo^",
+        " kKKKKKOxddxkOO00000Okxoc;''",
+    };
+}
+
+}

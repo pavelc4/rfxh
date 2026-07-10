@@ -1,0 +1,20 @@
+#pragma once
+#include <vector>
+#include <string>
+
+namespace rfxh::logo::builtin::linux {
+
+inline std::vector<std::string> logo_Origami_small() {
+    return {
+        "              00",
+        "            01  00",
+        "          0000  0000",
+        "        000001  00000",
+        "11010011110   00   01111001011",
+        " 01111100  00000000  00111110",
+        "  0110  00010000001000  0110",
+        "      000000000000000000",
+    };
+}
+
+}

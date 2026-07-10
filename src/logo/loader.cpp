@@ -1,9 +1,14 @@
 #include "logo/logo.hpp"
+#include "logo/library.hpp"
 #include "platform/process.hpp"
 #include "text/charweight.hpp"
+#include <algorithm>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+
+// Include generated logo registry (split across categories)
+#include "builtin/_registry.hpp"
 
 namespace rfxh::logo {
 
@@ -145,6 +150,20 @@ bool load_logo_fastfetch(Logo& logo, const char* name) {
     if (load_logo_ff_colored(logo, name))
         return true;
     return load_logo_ff_plain(logo, name);
+}
+
+bool load_logo_library(Logo& logo, const char* name) {
+    auto* lines = get_builtin_logo(name);
+    if (lines && !lines->empty()) {
+        for (const auto& line : *lines) {
+            if (logo.rows >= kMaxLogoRows) break;
+            int len = static_cast<int>(line.size());
+            std::memcpy(logo.data[logo.rows].data(), line.c_str(), len + 1);
+            logo.rows++;
+        }
+        return logo.rows > 0;
+    }
+    return false;
 }
 
 void load_default_logo(Logo& logo) {

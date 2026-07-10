@@ -1,0 +1,27 @@
+#pragma once
+#include <vector>
+#include <string>
+
+namespace rfxh::logo::builtin::cat_linux {
+
+inline std::vector<std::string> logo_Swagarch() {
+    return {
+        "        .;ldkOKXXNNNNXXK0Oxoc,.",
+        "   ,lkXMMNK0OkkxkkOKWMMMMMMMMMM;",
+        " 'K0xo  ..,;:c:.     `'lKMMMMM0",
+        "     .lONMMMMMM'         `lNMk'",
+        "    ;WMMMMMMMMMO.              ....::...",
+        "    OMMMMMMMMMMMMKl.       .,;;;;;ccccccc,",
+        "    `0MMMMMMMMMMMMMM0:         .. .ccccccc.",
+        "      'kWMMMMMMMMMMMMMNo.   .,:'  .ccccccc.",
+        "        `c0MMMMMMMMMMMMMN,,:c;    :cccccc:",
+        " ckl.      `lXMMMMMMMMMXocccc:.. ;ccccccc.",
+        "dMMMMXd,     `OMMMMMMWkccc;:''` ,ccccccc:",
+        "XMMMMMMMWKkxxOWMMMMMNoccc;     .cccccccc.",
+        " `':ldxO0KXXXXXK0Okdocccc.     :cccccccc.",
+        "                    :ccc:'     `cccccccc:,",
+        "                                   ''",
+    };
+}
+
+}

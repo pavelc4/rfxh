@@ -1,0 +1,34 @@
+#pragma once
+#include <vector>
+#include <string>
+
+namespace rfxh::logo::builtin::cat_linux {
+
+inline std::vector<std::string> logo_Slackel() {
+    return {
+        "              _aawmmmmmwwaaaaas,,,_.",
+        "           .ammmmm###mmmmmmm###BQmm##mws",
+        "         .am###mmBmBmBmBmBmBmmmmm#mmmm#2",
+        "        <q###mmBmBmBmBmBmBmBmBmBmBmmBmZ`",
+        "       um#mmmBmBm##U##mmBmBmBmWmmBmWm#(",
+        "     .wm#mmBBmm#Y~   ~XmBmBmWmmmmmBm#e",
+        "    .dm#mmWmm#Z'      ]#mBmBmmBZ!\"\"\"\"`",
+        "   .dm#mmBmm#2`       ]mmmBmBm#2",
+        "   jm#mmWmm#2`        dmmBmBmB#(",
+        "  )m##mBmmWZ`        )##mBmBmmZ",
+        " :dmmmBmBm#'        .d#mBmBmWZ(",
+        " j#mmBmBmme         jmmmBmBm#2",
+        "_m#mBmWmmm'        )mmmBmBmmZ`",
+        "]##mBmmm#2        <m#mBmBmB#^",
+        "dmmmBmWm#C       <m#mBmBmB#(",
+        "ZmmBmBmmmh.    _jm#mmBmBm#(",
+        "XBmBmBmBmm6s_aum##mmBmBm&^",
+        "3BmBmBmmm#mmmmmmBmBm#2'",
+        "+ZmBmBmWmBmBmWmmBmBm##!",
+        " )ZmBmBmmmBmBmmBmB##!`",
+        "  -4U#mBmWmBmBm##2\"",
+        "    -!!XU##US*?\"-",
+    };
+}
+
+}

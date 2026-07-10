@@ -20,6 +20,9 @@ struct Logo {
 // Load logo from ~/.config/fetch/logo.txt
 bool load_logo_file(Logo& logo);
 
+// Load logo from built-in library (case-insensitive name match)
+bool load_logo_library(Logo& logo, const char* name);
+
 // Load logo via fastfetch (colored first, then plain fallback)
 bool load_logo_fastfetch(Logo& logo, const char* name);
 

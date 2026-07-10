@@ -1,0 +1,29 @@
+#pragma once
+#include <vector>
+#include <string>
+
+namespace rfxh::logo::builtin::cat_linux {
+
+inline std::vector<std::string> logo_Minix() {
+    return {
+        "   -sdhyo+:-`                -/syymm:",
+        "   sdyooymmNNy.     ``    .smNmmdysNd",
+        "   odyoso+syNNmysoyhhdhsoomNmm+/osdm/",
+        "    :hhy+-/syNNmddhddddddmNMNo:sdNd:",
+        "     `smNNdNmmNmddddddddddmmmmmmmy`",
+        "   `ohhhhdddddmmNNdmddNmNNmdddddmdh-",
+        "   odNNNmdyo/:/-/hNddNy-`..-+ydNNNmd:",
+        " `+mNho:`   smmd/ sNNh :dmms`   -+ymmo.",
+        "-od/       -mmmmo -NN+ +mmmm-       yms:",
+        "+sms -.`    :so:  .NN+  :os/     .-`mNh:",
+        ".-hyh+:////-     -sNNd:`    .--://ohNs-",
+        " `:hNNNNNNNMMd/sNMmhsdMMh/ymmNNNmmNNy/",
+        "  -+sNNNNMMNNNsmNMo: :NNmymNNNNMMMms:",
+        "    //oydNMMMMydMMNysNMMmsMMMMMNyo/`",
+        "       ../-yNMMy--/::/-.sMMmos+.`",
+        "           -+oyhNsooo+omy/```",
+        "              `::ohdmds-`",
+    };
+}
+
+}

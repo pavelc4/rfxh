@@ -1,0 +1,30 @@
+#pragma once
+#include <vector>
+#include <string>
+
+namespace rfxh::logo::builtin::linux {
+
+inline std::vector<std::string> logo_Pardus() {
+    return {
+        " .smNdy+-    `.:/osyyso+:.`    -+ydmNs.",
+        "/Md- -/ymMdmNNdhso/::/oshdNNmdMmy/. :dM/",
+        "mN.     oMdyy- -y          `-dMo     .Nm",
+        ".mN+`  sMy hN+ -:             yMs  `+Nm.",
+        " `yMMddMs.dy `+`               sMddMMy`",
+        "   +MMMo  .`  .                 oMMM+",
+        "   `NM/    `````.`    `.`````    +MN`",
+        "   yM+   `.-:yhomy    ymohy:-.`   +My",
+        "   yM:          yo    oy          :My",
+        "   +Ms         .N`    `N.      +h sM+",
+        "   `MN      -   -::::::-   : :o:+`NM`",
+        "    yM/    sh   -dMMMMd-   ho  +y+My",
+        "    .dNhsohMh-//: /mm/ ://-yMyoshNd`",
+        "      `-ommNMm+:/. oo ./:+mMNmmo:`",
+        "     `/o+.-somNh- :yy: -hNmos-.+o/`",
+        "    ./` .s/`s+sMdd+``+ddMs+s`/s. `/.",
+        "        : -y.  -hNmddmNy.  .y- :",
+        "         -+       `..`       +-",
+    };
+}
+
+}

@@ -1,0 +1,32 @@
+#pragma once
+#include <vector>
+#include <string>
+
+namespace rfxh::logo::builtin::linux {
+
+inline std::vector<std::string> logo_Proxmox() {
+    return {
+        "         .://:`              `://:.",
+        "       `hMMMMMMd/          /dMMMMMMh`",
+        "        `sMMMMMMMd:      :mMMMMMMMs`",
+        "`-/+oo+/:`.yMMMMMMMh-  -hMMMMMMMy.`:/+oo+/-`",
+        "`:oooooooo/`-hMMMMMMMyyMMMMMMMh-`/oooooooo:`",
+        "  `/oooooooo:`:mMMMMMMMMMMMMm:`:oooooooo/`",
+        "    ./ooooooo+- +NMMMMMMMMN+ -+ooooooo/.",
+        "      .+ooooooo+-`oNMMMMNo`-+ooooooo+.",
+        "        -+ooooooo/.`sMMs`./ooooooo+-",
+        "          :oooooooo/`..`/oooooooo:",
+        "          :oooooooo/`..`/oooooooo:",
+        "        -+ooooooo/.`sMMs`./ooooooo+-",
+        "      .+ooooooo+-`oNMMMMNo`-+ooooooo+.",
+        "    ./ooooooo+- +NMMMMMMMMN+ -+ooooooo/.",
+        "  `/oooooooo:`:mMMMMMMMMMMMMm:`:oooooooo/`",
+        "`:oooooooo/`-hMMMMMMMyyMMMMMMMh-`/oooooooo:`",
+        "`-/+oo+/:`.yMMMMMMMh-  -hMMMMMMMy.`:/+oo+/-`",
+        "        `sMMMMMMMm:      :dMMMMMMMs`",
+        "       `hMMMMMMd/          /dMMMMMMh`",
+        "         `://:`              `://:`",
+    };
+}
+
+}
