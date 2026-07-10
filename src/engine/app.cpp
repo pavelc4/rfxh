@@ -1,16 +1,13 @@
 #include "engine/app.hpp"
 #include "config/fields.hpp"
 #include "logo/detect.hpp"
+#include "platform/terminal.hpp"
 #include "render/constants.hpp"
 #include "terminal/terminal.hpp"
 #include "text/shading.hpp"
 #include <cmath>
 #include <cstdio>
 #include <cstring>
-#include <poll.h>
-#include <signal.h>
-#include <termios.h>
-#include <unistd.h>
 
 namespace rfxh::engine {
 
@@ -191,30 +188,24 @@ void App::animation_loop(const config::CliOptions& opts) {
     terminal::install_signal_handlers();
     terminal::RawModeGuard guard;
 
-    std::printf("\033[?25l\033[2J");
-    std::fflush(stdout);
+    platform::cursor_hide();
+    platform::screen_clear();
 
     for (int frame = 0; opts.max_frames == 0 || frame < opts.max_frames; frame++) {
-        // Check for keypress (only exit on actual data, not EOF)
-        struct pollfd pfd = {STDIN_FILENO, POLLIN, 0};
-        int pret = poll(&pfd, 1, 0);
-        if (pret > 0 && (pfd.revents & POLLIN)) {
-            char c;
-            if (read(STDIN_FILENO, &c, 1) == 1)
-                break;
-        }
+        // Check for keypress
+        if (platform::keypress_available())
+            break;
 
         // Handle terminal resize
-        if (terminal::consume_resize_flag()) {
-            int new_rows = terminal::get_term_rows();
+        if (platform::consume_resize()) {
+            int new_rows = platform::terminal_rows();
             if (new_rows > 1) new_rows--;
             if (new_rows > 0 && new_rows != render_height_) {
                 render_height_ = new_rows;
                 if (render_height_ > render::kFrameHeight)
                     render_height_ = render::kFrameHeight;
                 K1_ = 37.0f * render_height_ / 36.0f;
-                std::printf("\033[2J");
-                std::fflush(stdout);
+                platform::screen_clear();
             }
         }
 
@@ -248,11 +239,10 @@ void App::animation_loop(const config::CliOptions& opts) {
         render::render_frame(render_, render_height_, fetch_lines_, fetch_line_count_,
                              fetch_start_, logo_, color_inner_, color_outer_, opts.use_color);
 
-        usleep(50000);
+        platform::sleep_ms(50);
     }
 
-    std::printf("\033[?25h");
-    std::fflush(stdout);
+    platform::cursor_show();
 }
 
 } // namespace rfxh::engine

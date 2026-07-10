@@ -8,7 +8,6 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
-#include <unistd.h>
 
 namespace rfxh::render {
 
@@ -89,7 +88,8 @@ void render_frame(const RenderEngine& eng, int render_height,
         buf += '\n';
     }
 
-    ::write(STDOUT_FILENO, buf.data(), buf.size());
+    std::fwrite(buf.data(), 1, buf.size(), stdout);
+    std::fflush(stdout);
 }
 
 } // namespace rfxh::render

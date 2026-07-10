@@ -1,61 +1,12 @@
 #include "terminal/terminal.hpp"
-
-#include <cstdio>
-#include <cstdlib>
-#include <sys/ioctl.h>
-#include <csignal>
-#include <termios.h>
-#include <unistd.h>
-
-namespace {
-
-    struct termios orig_termios;
-    bool termios_saved = false;
-
-    rfxh::terminal::RawModeGuard* g_active_guard = nullptr;
-    volatile sig_atomic_t g_term_resized = 0;
-
-    void restore_termios() {
-        if (termios_saved) {
-            tcsetattr(STDIN_FILENO, TCSANOW, &orig_termios);
-            termios_saved = false;
-        }
-    }
-
-    void handle_signal(int) {
-        if (g_active_guard)
-            g_active_guard->restore();
-        else
-            restore_termios();
-        std::printf("\033[?25h");
-        std::fflush(stdout);
-        _exit(0);
-    }
-
-    void handle_winch(int) {
-        g_term_resized = 1;
-    }
-
-} // anonymous namespace
+#include "platform/terminal.hpp"
 
 namespace rfxh::terminal {
 
     RawModeGuard::RawModeGuard() {
-        struct termios raw;
-        tcgetattr(STDIN_FILENO, &orig_termios);
-        termios_saved = true;
-        g_active_guard = this;
-
-        raw = orig_termios;
-        raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
-        raw.c_iflag &= ~(IXON | ICRNL);
-        raw.c_cc[VMIN] = 0;
-        raw.c_cc[VTIME] = 1;
-        tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
-
+        platform::terminal_init();
+        platform::cursor_hide();
         active_ = true;
-        std::printf("\033[?25l");
-        std::fflush(stdout);
     }
 
     RawModeGuard::~RawModeGuard() {
@@ -64,33 +15,22 @@ namespace rfxh::terminal {
 
     void RawModeGuard::restore() {
         if (active_) {
-            restore_termios();
-            g_active_guard = nullptr;
+            platform::terminal_restore();
             active_ = false;
         }
-        std::printf("\033[?25h");
-        std::fflush(stdout);
+        platform::cursor_show();
     }
 
     void install_signal_handlers() {
-        std::signal(SIGINT, handle_signal);
-        std::signal(SIGTERM, handle_signal);
-        std::signal(SIGWINCH, handle_winch);
+        // Signal handlers are installed in platform::terminal_init()
     }
 
     int get_term_rows() {
-        struct winsize ws;
-        if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == 0 && ws.ws_row > 0)
-            return ws.ws_row;
-        return 0;
+        return platform::terminal_rows();
     }
 
     bool consume_resize_flag() {
-        if (g_term_resized) {
-            g_term_resized = 0;
-            return true;
-        }
-        return false;
+        return platform::consume_resize();
     }
 
 } // namespace rfxh::terminal
