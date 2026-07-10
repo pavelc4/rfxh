@@ -10,6 +10,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(rfxh
     src/main.cpp
     src/terminal/terminal.cpp
+    src/text/utf8.cpp
+    src/text/shading.cpp
+    src/text/charweight.cpp
     src/config/defaults.cpp
     src/config/cli.cpp
 )
