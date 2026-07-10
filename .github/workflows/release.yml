@@ -21,12 +21,21 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       notify_message_id: ${{ steps.notify_start.outputs.message_id }}
+      has_token: ${{ steps.check_token.outputs.has_token }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Check BOT_TOKEN
+        id: check_token
+        run: |
+          if [ -n "${{ secrets.BOT_TOKEN }}" ]; then
+            echo "has_token=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_token=false" >> $GITHUB_OUTPUT
+          fi
       - name: Notify Release Start
-        if: ${{ env.BOT_TOKEN != '' }}
+        if: ${{ steps.check_token.outputs.has_token == 'true' }}
         id: notify_start
         uses: ./.github/actions/telegram-notify
         with:
@@ -187,7 +196,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   notify:
-    if: ${{ !cancelled() && env.BOT_TOKEN != '' }}
+    if: ${{ !cancelled() && needs.setup.outputs.has_token == 'true' }}
     needs: [setup, release]
     runs-on: ubuntu-latest
     steps:
