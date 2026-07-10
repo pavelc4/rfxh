@@ -12,7 +12,7 @@
 #include "logo_Windows_95.hpp"
 #include "logo_Windows_Server_2025.hpp"
 
-namespace rfxh::logo::builtin_cat_windows {
+namespace rfxh::logo::builtin::cat_windows {
 
 using LogoFunc = std::function<std::vector<std::string>()>;
 

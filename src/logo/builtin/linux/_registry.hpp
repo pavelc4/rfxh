@@ -4,389 +4,861 @@
 #include <functional>
 #include <unordered_map>
 
-namespace rfxh::logo::builtin_linux {
+#include "logo_ALTLinux.hpp"
+#include "logo_ARCHlabs.hpp"
+#include "logo_Aeon.hpp"
+#include "logo_AerynOS.hpp"
+#include "logo_Afterglow.hpp"
+#include "logo_Almalinux.hpp"
+#include "logo_Alpine.hpp"
+#include "logo_Alpine2.hpp"
+#include "logo_Alpine_small.hpp"
+#include "logo_Alter.hpp"
+#include "logo_Amazon.hpp"
+#include "logo_Amazon_Linux.hpp"
+#include "logo_Amiga.hpp"
+#include "logo_Anarchy.hpp"
+#include "logo_Antergos.hpp"
+#include "logo_AnushOS.hpp"
+#include "logo_Aosc_OS.hpp"
+#include "logo_Aosc_OS_Retro.hpp"
+#include "logo_Aosc_OS_Retro_small.hpp"
+#include "logo_Aosc_OS_old.hpp"
+#include "logo_Aperture.hpp"
+#include "logo_Apricity.hpp"
+#include "logo_ArchBox.hpp"
+#include "logo_ArchStrike.hpp"
+#include "logo_Archcraft.hpp"
+#include "logo_Archcraft2.hpp"
+#include "logo_Arkane.hpp"
+#include "logo_Armbian.hpp"
+#include "logo_Armbian2.hpp"
+#include "logo_Arya.hpp"
+#include "logo_AsteroidOS.hpp"
+#include "logo_Astra.hpp"
+#include "logo_Ataraxia_Linux.hpp"
+#include "logo_AthenaOS.hpp"
+#include "logo_Aurora.hpp"
+#include "logo_AxOS.hpp"
+#include "logo_Azos.hpp"
+#include "logo_BLAG.hpp"
+#include "logo_BerserkArch.hpp"
+#include "logo_BigLinux.hpp"
+#include "logo_Bitrig.hpp"
+#include "logo_BlackMesa.hpp"
+#include "logo_BlackPanther.hpp"
+#include "logo_Blackarch.hpp"
+#include "logo_BlankOn.hpp"
+#include "logo_BlueLight.hpp"
+#include "logo_Bodhi.hpp"
+#include "logo_Bonsai.hpp"
+#include "logo_Bredos.hpp"
+#include "logo_CBL_Mariner.hpp"
+#include "logo_CachyOS.hpp"
+#include "logo_Calculate.hpp"
+#include "logo_Calinix.hpp"
+#include "logo_Calinix_small.hpp"
+#include "logo_Carbs.hpp"
+#include "logo_Cel.hpp"
+#include "logo_CentOS.hpp"
+#include "logo_CentOS_small.hpp"
+#include "logo_Center.hpp"
+#include "logo_Cereus.hpp"
+#include "logo_Chakra.hpp"
+#include "logo_ChaletOS.hpp"
+#include "logo_Chapeau.hpp"
+#include "logo_Chimera.hpp"
+#include "logo_ChonkySealOS.hpp"
+#include "logo_Chrom.hpp"
+#include "logo_Cleanjaro.hpp"
+#include "logo_Cleanjaro_small.hpp"
+#include "logo_ClearOS.hpp"
+#include "logo_Clear_Linux.hpp"
+#include "logo_Clover.hpp"
+#include "logo_Cobalt.hpp"
+#include "logo_Codex_Linux.hpp"
+#include "logo_Condres.hpp"
+#include "logo_ContainerLinux.hpp"
+#include "logo_Cosmic.hpp"
+#include "logo_Crystal.hpp"
+#include "logo_Cucumber.hpp"
+#include "logo_CuerdOS.hpp"
+#include "logo_CuteOS.hpp"
+#include "logo_CutefishOS.hpp"
+#include "logo_CyberOS.hpp"
+#include "logo_DarkOS.hpp"
+#include "logo_Debian.hpp"
+#include "logo_Debian_small.hpp"
+#include "logo_Deepin.hpp"
+#include "logo_Devuan.hpp"
+#include "logo_Devuan_small.hpp"
+#include "logo_DietPi.hpp"
+#include "logo_DracOS.hpp"
+#include "logo_DraugerOS.hpp"
+#include "logo_Droidian.hpp"
+#include "logo_Elementary.hpp"
+#include "logo_Elementary_small.hpp"
+#include "logo_Elive.hpp"
+#include "logo_Emmabuntus.hpp"
+#include "logo_Emperor.hpp"
+#include "logo_EncryptOS.hpp"
+#include "logo_EndeavourOS.hpp"
+#include "logo_Endless.hpp"
+#include "logo_Enso.hpp"
+#include "logo_EshanizedOS.hpp"
+#include "logo_EuroLinux.hpp"
+#include "logo_EvolutionOS.hpp"
+#include "logo_Exherbo.hpp"
+#include "logo_Exodia.hpp"
+#include "logo_Fastfetch.hpp"
+#include "logo_Fedora.hpp"
+#include "logo_Fedora2_small.hpp"
+#include "logo_Fedora_CoreOS.hpp"
+#include "logo_Fedora_Kinoite.hpp"
+#include "logo_Fedora_Sericea.hpp"
+#include "logo_Fedora_Silverblue.hpp"
+#include "logo_Fedora_old.hpp"
+#include "logo_Fedora_small.hpp"
+#include "logo_FemboyOS.hpp"
+#include "logo_Feren.hpp"
+#include "logo_Finnix.hpp"
+#include "logo_Floflis.hpp"
+#include "logo_FreeMiNT.hpp"
+#include "logo_Frugalware.hpp"
+#include "logo_Funtoo.hpp"
+#include "logo_Furreto.hpp"
+#include "logo_GNOME_OS.hpp"
+#include "logo_GNU.hpp"
+#include "logo_GXDE.hpp"
+#include "logo_GalliumOS.hpp"
+#include "logo_Garuda.hpp"
+#include "logo_GarudaDragon.hpp"
+#include "logo_Garuda_small.hpp"
+#include "logo_Gentoo.hpp"
+#include "logo_Gentoo_small.hpp"
+#include "logo_Glaucus.hpp"
+#include "logo_GoboLinux.hpp"
+#include "logo_GoldenDog_Linux.hpp"
+#include "logo_Grombyang.hpp"
+#include "logo_Guix.hpp"
+#include "logo_Guix_small.hpp"
+#include "logo_Haiku.hpp"
+#include "logo_Haiku2.hpp"
+#include "logo_Haiku_small.hpp"
+#include "logo_HarmonyOS.hpp"
+#include "logo_Hash.hpp"
+#include "logo_HeliumOS.hpp"
+#include "logo_Huawei_Cloud_EulerOS.hpp"
+#include "logo_Huayra.hpp"
+#include "logo_Hybrid.hpp"
+#include "logo_HydroOS.hpp"
+#include "logo_Hyperbola.hpp"
+#include "logo_Hyperbola_small.hpp"
+#include "logo_IRIX.hpp"
+#include "logo_Iglunix.hpp"
+#include "logo_InstantOS.hpp"
+#include "logo_Interix.hpp"
+#include "logo_Ironclad.hpp"
+#include "logo_Itc.hpp"
+#include "logo_KISS.hpp"
+#include "logo_KSLinux.hpp"
+#include "logo_KaOS.hpp"
+#include "logo_Kaisen.hpp"
+#include "logo_Kali.hpp"
+#include "logo_Kali_small.hpp"
+#include "logo_KernelOS.hpp"
+#include "logo_KibaOS.hpp"
+#include "logo_Kibojoe.hpp"
+#include "logo_Kogaion.hpp"
+#include "logo_Korora.hpp"
+#include "logo_KrassOS.hpp"
+#include "logo_Kubuntu.hpp"
+#include "logo_Kylin.hpp"
+#include "logo_LMDE.hpp"
+#include "logo_LainOS.hpp"
+#include "logo_Laxeros.hpp"
+#include "logo_LibreELEC.hpp"
+#include "logo_Lilidog.hpp"
+#include "logo_LimeOS.hpp"
+#include "logo_Lingmo.hpp"
+#include "logo_Linspire.hpp"
+#include "logo_Linux.hpp"
+#include "logo_LinuxFromScratch.hpp"
+#include "logo_LinuxLite.hpp"
+#include "logo_LinuxLite_small.hpp"
+#include "logo_Linux_small.hpp"
+#include "logo_Live_Raizo.hpp"
+#include "logo_LliureX.hpp"
+#include "logo_Lunar.hpp"
+#include "logo_MOS.hpp"
+#include "logo_Macaroni.hpp"
+#include "logo_Mageia.hpp"
+#include "logo_Mageia_small.hpp"
+#include "logo_Magix.hpp"
+#include "logo_MagpieOS.hpp"
+#include "logo_MainsailOS.hpp"
+#include "logo_MassOS.hpp"
+#include "logo_Mauna.hpp"
+#include "logo_Meowix.hpp"
+#include "logo_Mer.hpp"
+#include "logo_Minimal_System.hpp"
+#include "logo_Minix.hpp"
+#include "logo_Msys2.hpp"
+#include "logo_Namib.hpp"
+#include "logo_Nekos.hpp"
+#include "logo_Neptune.hpp"
+#include "logo_Nitrux.hpp"
+#include "logo_NixOS.hpp"
+#include "logo_NixOS2.hpp"
+#include "logo_NixOS_small.hpp"
+#include "logo_NuTyX.hpp"
+#include "logo_NurOS.hpp"
+#include "logo_Nurunner.hpp"
+#include "logo_OPNsense.hpp"
+#include "logo_OSMC.hpp"
+#include "logo_OS_Elbrus.hpp"
+#include "logo_Obarun.hpp"
+#include "logo_ObsidianOS.hpp"
+#include "logo_OpenEuler.hpp"
+#include "logo_OpenIndiana.hpp"
+#include "logo_OpenMamba.hpp"
+#include "logo_OpenStage.hpp"
+#include "logo_Oreon.hpp"
+#include "logo_Origami.hpp"
+#include "logo_Origami_small.hpp"
+#include "logo_PCLinuxOS.hpp"
+#include "logo_PNM_Linux.hpp"
+#include "logo_Panwah.hpp"
+#include "logo_Parch.hpp"
+#include "logo_Pardus.hpp"
+#include "logo_Parrot.hpp"
+#include "logo_Parsix.hpp"
+#include "logo_PearOS.hpp"
+#include "logo_Pentoo.hpp"
+#include "logo_Peppermint.hpp"
+#include "logo_Peropesis.hpp"
+#include "logo_PhyOS.hpp"
+#include "logo_PikaOS.hpp"
+#include "logo_PisiLinux.hpp"
+#include "logo_Porteus.hpp"
+#include "logo_PrismLinux.hpp"
+#include "logo_PrismLinux_small.hpp"
+#include "logo_Proxmox.hpp"
+#include "logo_PuffOS.hpp"
+#include "logo_Puppy.hpp"
+#include "logo_PureOS.hpp"
+#include "logo_Q4OS.hpp"
+#include "logo_Quasar.hpp"
+#include "logo_Qubes.hpp"
+#include "logo_Qubyt.hpp"
+#include "logo_Quibian.hpp"
+#include "logo_Quirinux.hpp"
+#include "logo_Radix.hpp"
+#include "logo_RavynOS.hpp"
+#include "logo_RebornOS.hpp"
+#include "logo_RedOS.hpp"
+#include "logo_Redrose.hpp"
+#include "logo_Refracta.hpp"
+#include "logo_Regata.hpp"
+#include "logo_Regolith.hpp"
+#include "logo_RengeOS.hpp"
+#include "logo_Rhino_Linux.hpp"
+#include "logo_Sabayon.hpp"
+#include "logo_Sabotage.hpp"
+#include "logo_Sailfish.hpp"
+#include "logo_Salient_OS.hpp"
+#include "logo_Salix.hpp"
+#include "logo_Sasanqua.hpp"
+#include "logo_Scientific.hpp"
+#include "logo_Septor.hpp"
+#include "logo_Serene.hpp"
+#include "logo_Serpent_OS.hpp"
+#include "logo_SharkLinux.hpp"
+#include "logo_ShastraOS.hpp"
+#include "logo_Shebang.hpp"
+#include "logo_Siduction.hpp"
+#include "logo_SkiffOS.hpp"
+#include "logo_Slackel.hpp"
+#include "logo_Slackware.hpp"
+#include "logo_Slackware_small.hpp"
+#include "logo_SleeperOS.hpp"
+#include "logo_Slitaz.hpp"
+#include "logo_SnigdhaOS.hpp"
+#include "logo_Soda.hpp"
+#include "logo_Solus.hpp"
+#include "logo_Source_Mage.hpp"
+#include "logo_Sparky.hpp"
+#include "logo_SpoinkOS.hpp"
+#include "logo_Star.hpp"
+#include "logo_SteamOS.hpp"
+#include "logo_Stock_Linux.hpp"
+#include "logo_Sulin.hpp"
+#include "logo_Swagarch.hpp"
+#include "logo_Tails.hpp"
+#include "logo_Tatra.hpp"
+#include "logo_TeArch.hpp"
+#include "logo_TempleOS.hpp"
+#include "logo_TileOS.hpp"
+#include "logo_Torizon_OS.hpp"
+#include "logo_Trisquel.hpp"
+#include "logo_Turkish.hpp"
+#include "logo_Tuxedo_OS.hpp"
+#include "logo_Twister.hpp"
+#include "logo_UBLinux.hpp"
+#include "logo_UBLinux_small.hpp"
+#include "logo_UOS.hpp"
+#include "logo_Ultramarine.hpp"
+#include "logo_Ultramarine_small.hpp"
+#include "logo_Unifi.hpp"
+#include "logo_Univalent.hpp"
+#include "logo_Univention.hpp"
+#include "logo_UrukOS.hpp"
+#include "logo_Uzbek.hpp"
+#include "logo_Valhalla.hpp"
+#include "logo_Venom.hpp"
+#include "logo_Venom_small.hpp"
+#include "logo_VincentOS.hpp"
+#include "logo_Vnux.hpp"
+#include "logo_Vzlinux.hpp"
+#include "logo_WiiLinuxNgx.hpp"
+#include "logo_WolfOS.hpp"
+#include "logo_XCP_ng.hpp"
+#include "logo_XJ380.hpp"
+#include "logo_Xenia.hpp"
+#include "logo_Xenia_old.hpp"
+#include "logo_XeroArch.hpp"
+#include "logo_Xferience.hpp"
+#include "logo_Ximper.hpp"
+#include "logo_Xinux.hpp"
+#include "logo_Xray_OS.hpp"
+#include "logo_Xubuntu.hpp"
+#include "logo_YiffOS.hpp"
+#include "logo_Zerene.hpp"
+#include "logo_Zorin.hpp"
+#include "logo_Zraxyl.hpp"
+#include "logo_aerOS.hpp"
+#include "logo_aix.hpp"
+#include "logo_alpine2_small.hpp"
+#include "logo_alpine3_small.hpp"
+#include "logo_anduinos.hpp"
+#include "logo_antiX.hpp"
+#include "logo_arch.hpp"
+#include "logo_arch2.hpp"
+#include "logo_arch3.hpp"
+#include "logo_arch_old.hpp"
+#include "logo_arch_small.hpp"
+#include "logo_arco.hpp"
+#include "logo_arse.hpp"
+#include "logo_artix.hpp"
+#include "logo_asahi.hpp"
+#include "logo_asahi2.hpp"
+#include "logo_aster.hpp"
+#include "logo_bedrock.hpp"
+#include "logo_cycledream.hpp"
+#include "logo_elbrus.hpp"
+#include "logo_fedora_asahi_remix.hpp"
+#include "logo_filotimo.hpp"
+#include "logo_gNewSense.hpp"
+#include "logo_hypros.hpp"
+#include "logo_januslinux.hpp"
+#include "logo_kalpa_desktop.hpp"
+#include "logo_kdelinux.hpp"
+#include "logo_kiss2.hpp"
+#include "logo_langitketujuh.hpp"
+#include "logo_linuxmint.hpp"
+#include "logo_linuxmint2.hpp"
+#include "logo_linuxmint_old.hpp"
+#include "logo_linuxmint_small.hpp"
+#include "logo_locos.hpp"
+#include "logo_lubuntu.hpp"
+#include "logo_mandriva.hpp"
+#include "logo_manjaro.hpp"
+#include "logo_manjaro_small.hpp"
+#include "logo_miraclelinux.hpp"
+#include "logo_nexalinux.hpp"
+#include "logo_nixos_old.hpp"
+#include "logo_nixos_old_small.hpp"
+#include "logo_nobara.hpp"
+#include "logo_openkylin.hpp"
+#include "logo_openmandriva.hpp"
+#include "logo_opensuse.hpp"
+#include "logo_opensuse_leap.hpp"
+#include "logo_opensuse_leap_old.hpp"
+#include "logo_opensuse_microos.hpp"
+#include "logo_opensuse_slowroll.hpp"
+#include "logo_opensuse_small.hpp"
+#include "logo_opensuse_tumbleweed.hpp"
+#include "logo_opensuse_tumbleweed2.hpp"
+#include "logo_opensuse_tumbleweed_old.hpp"
+#include "logo_opensuse_tumbleweed_small.hpp"
+#include "logo_openwrt.hpp"
+#include "logo_oracle.hpp"
+#include "logo_orchid.hpp"
+#include "logo_parabola.hpp"
+#include "logo_pop.hpp"
+#include "logo_pop_small.hpp"
+#include "logo_qts.hpp"
+#include "logo_raspbian.hpp"
+#include "logo_redstar.hpp"
+#include "logo_rhel.hpp"
+#include "logo_rocky.hpp"
+#include "logo_rosa.hpp"
+#include "logo_secureblue.hpp"
+#include "logo_semc.hpp"
+#include "logo_suse.hpp"
+#include "logo_suse_small.hpp"
+#include "logo_ubuntu.hpp"
+#include "logo_ubuntu_budgie.hpp"
+#include "logo_ubuntu_cinnamon.hpp"
+#include "logo_ubuntu_gnome.hpp"
+#include "logo_ubuntu_kylin.hpp"
+#include "logo_ubuntu_mate.hpp"
+#include "logo_ubuntu_old.hpp"
+#include "logo_ubuntu_old2.hpp"
+#include "logo_ubuntu_old2_small.hpp"
+#include "logo_ubuntu_small.hpp"
+#include "logo_ubuntu_studio.hpp"
+#include "logo_ubuntu_sway.hpp"
+#include "logo_ubuntu_touch.hpp"
+#include "logo_ubuntu_unity.hpp"
+#include "logo_uwuntu.hpp"
+#include "logo_vanilla.hpp"
+#include "logo_vanilla2.hpp"
+#include "logo_void.hpp"
+#include "logo_void2.hpp"
+#include "logo_void2_small.hpp"
+#include "logo_void_small.hpp"
+
+namespace rfxh::logo::builtin::cat_linux {
 
 using LogoFunc = std::function<std::vector<std::string>()>;
 
 inline const std::unordered_map<std::string, LogoFunc>& get_registry() {
     static const std::unordered_map<std::string, LogoFunc> registry = {
-        {"altlinux", builtin::linux::logo_ALTLinux},
-        {"archlabs", builtin::linux::logo_ARCHlabs},
-        {"aeon", builtin::linux::logo_Aeon},
-        {"aerynos", builtin::linux::logo_AerynOS},
-        {"afterglow", builtin::linux::logo_Afterglow},
-        {"almalinux", builtin::linux::logo_Almalinux},
-        {"alpine", builtin::linux::logo_Alpine},
-        {"alpine2", builtin::linux::logo_Alpine2},
-        {"alpine_small", builtin::linux::logo_Alpine_small},
-        {"alter", builtin::linux::logo_Alter},
-        {"amazon", builtin::linux::logo_Amazon},
-        {"amazon linux", builtin::linux::logo_Amazon_Linux},
-        {"amiga", builtin::linux::logo_Amiga},
-        {"anarchy", builtin::linux::logo_Anarchy},
-        {"anushos", builtin::linux::logo_AnushOS},
-        {"aosc os", builtin::linux::logo_Aosc_OS},
-        {"aosc os/retro", builtin::linux::logo_Aosc_OS_Retro},
-        {"aosc os/retro_small", builtin::linux::logo_Aosc_OS_Retro_small},
-        {"aosc os_old", builtin::linux::logo_Aosc_OS_old},
-        {"aperture", builtin::linux::logo_Aperture},
-        {"apricity", builtin::linux::logo_Apricity},
-        {"archbox", builtin::linux::logo_ArchBox},
-        {"archstrike", builtin::linux::logo_ArchStrike},
-        {"archcraft", builtin::linux::logo_Archcraft},
-        {"archcraft2", builtin::linux::logo_Archcraft2},
-        {"arkane", builtin::linux::logo_Arkane},
-        {"armbian", builtin::linux::logo_Armbian},
-        {"armbian2", builtin::linux::logo_Armbian2},
-        {"arya", builtin::linux::logo_Arya},
-        {"asteroidos", builtin::linux::logo_AsteroidOS},
-        {"astra", builtin::linux::logo_Astra},
-        {"ataraxia linux", builtin::linux::logo_Ataraxia_Linux},
-        {"athenaos", builtin::linux::logo_AthenaOS},
-        {"aurora", builtin::linux::logo_Aurora},
-        {"axos", builtin::linux::logo_AxOS},
-        {"azos", builtin::linux::logo_Azos},
-        {"blag", builtin::linux::logo_BLAG},
-        {"berserkarch", builtin::linux::logo_BerserkArch},
-        {"biglinux", builtin::linux::logo_BigLinux},
-        {"blackmesa", builtin::linux::logo_BlackMesa},
-        {"blackarch", builtin::linux::logo_Blackarch},
-        {"blankon", builtin::linux::logo_BlankOn},
-        {"bluelight", builtin::linux::logo_BlueLight},
-        {"bodhi", builtin::linux::logo_Bodhi},
-        {"bonsai", builtin::linux::logo_Bonsai},
-        {"bredos", builtin::linux::logo_Bredos},
-        {"cbl-mariner", builtin::linux::logo_CBL_Mariner},
-        {"cachyos", builtin::linux::logo_CachyOS},
-        {"calculate", builtin::linux::logo_Calculate},
-        {"calinix", builtin::linux::logo_Calinix},
-        {"calinix_small", builtin::linux::logo_Calinix_small},
-        {"carbs", builtin::linux::logo_Carbs},
-        {"cel", builtin::linux::logo_Cel},
-        {"cereus", builtin::linux::logo_Cereus},
-        {"chakra", builtin::linux::logo_Chakra},
-        {"chaletos", builtin::linux::logo_ChaletOS},
-        {"chapeau", builtin::linux::logo_Chapeau},
-        {"chimera", builtin::linux::logo_Chimera},
-        {"chonkysealos", builtin::linux::logo_ChonkySealOS},
-        {"chrom", builtin::linux::logo_Chrom},
-        {"cleanjaro", builtin::linux::logo_Cleanjaro},
-        {"cleanjaro_small", builtin::linux::logo_Cleanjaro_small},
-        {"clearos", builtin::linux::logo_ClearOS},
-        {"clear linux", builtin::linux::logo_Clear_Linux},
-        {"clover", builtin::linux::logo_Clover},
-        {"cobalt", builtin::linux::logo_Cobalt},
-        {"codex linux", builtin::linux::logo_Codex_Linux},
-        {"condres", builtin::linux::logo_Condres},
-        {"cosmic", builtin::linux::logo_Cosmic},
-        {"crystal", builtin::linux::logo_Crystal},
-        {"cucumber", builtin::linux::logo_Cucumber},
-        {"cuerdos", builtin::linux::logo_CuerdOS},
-        {"cuteos", builtin::linux::logo_CuteOS},
-        {"cutefishos", builtin::linux::logo_CutefishOS},
-        {"cyberos", builtin::linux::logo_CyberOS},
-        {"darkos", builtin::linux::logo_DarkOS},
-        {"debian", builtin::linux::logo_Debian},
-        {"debian_small", builtin::linux::logo_Debian_small},
-        {"deepin", builtin::linux::logo_Deepin},
-        {"devuan", builtin::linux::logo_Devuan},
-        {"devuan_small", builtin::linux::logo_Devuan_small},
-        {"dietpi", builtin::linux::logo_DietPi},
-        {"dracos", builtin::linux::logo_DracOS},
-        {"draugeros", builtin::linux::logo_DraugerOS},
-        {"droidian", builtin::linux::logo_Droidian},
-        {"elive", builtin::linux::logo_Elive},
-        {"emperor", builtin::linux::logo_Emperor},
-        {"encryptos", builtin::linux::logo_EncryptOS},
-        {"endeavouros", builtin::linux::logo_EndeavourOS},
-        {"endless", builtin::linux::logo_Endless},
-        {"enso", builtin::linux::logo_Enso},
-        {"eshanizedos", builtin::linux::logo_EshanizedOS},
-        {"eurolinux", builtin::linux::logo_EuroLinux},
-        {"evolutionos", builtin::linux::logo_EvolutionOS},
-        {"exherbo", builtin::linux::logo_Exherbo},
-        {"exodia", builtin::linux::logo_Exodia},
-        {"fastfetch", builtin::linux::logo_Fastfetch},
-        {"fedora", builtin::linux::logo_Fedora},
-        {"fedora2_small", builtin::linux::logo_Fedora2_small},
-        {"fedora-coreos", builtin::linux::logo_Fedora_CoreOS},
-        {"fedora-kinoite", builtin::linux::logo_Fedora_Kinoite},
-        {"fedora-sericea", builtin::linux::logo_Fedora_Sericea},
-        {"fedora-silverblue", builtin::linux::logo_Fedora_Silverblue},
-        {"fedora_old", builtin::linux::logo_Fedora_old},
-        {"fedora_small", builtin::linux::logo_Fedora_small},
-        {"femboyos", builtin::linux::logo_FemboyOS},
-        {"feren", builtin::linux::logo_Feren},
-        {"finnix", builtin::linux::logo_Finnix},
-        {"floflis", builtin::linux::logo_Floflis},
-        {"frugalware", builtin::linux::logo_Frugalware},
-        {"furreto", builtin::linux::logo_Furreto},
-        {"gnome os", builtin::linux::logo_GNOME_OS},
-        {"gnu", builtin::linux::logo_GNU},
-        {"gxde", builtin::linux::logo_GXDE},
-        {"galliumos", builtin::linux::logo_GalliumOS},
-        {"garuda", builtin::linux::logo_Garuda},
-        {"garudadragon", builtin::linux::logo_GarudaDragon},
-        {"garuda_small", builtin::linux::logo_Garuda_small},
-        {"glaucus", builtin::linux::logo_Glaucus},
-        {"gobolinux", builtin::linux::logo_GoboLinux},
-        {"goldendog linux", builtin::linux::logo_GoldenDog_Linux},
-        {"grombyang", builtin::linux::logo_Grombyang},
-        {"guix", builtin::linux::logo_Guix},
-        {"guix_small", builtin::linux::logo_Guix_small},
-        {"haiku", builtin::linux::logo_Haiku},
-        {"haiku2", builtin::linux::logo_Haiku2},
-        {"haiku_small", builtin::linux::logo_Haiku_small},
-        {"harmonyos", builtin::linux::logo_HarmonyOS},
-        {"hash", builtin::linux::logo_Hash},
-        {"heliumos", builtin::linux::logo_HeliumOS},
-        {"huawei cloud euleros", builtin::linux::logo_Huawei_Cloud_EulerOS},
-        {"huayra", builtin::linux::logo_Huayra},
-        {"hybrid", builtin::linux::logo_Hybrid},
-        {"hydroos", builtin::linux::logo_HydroOS},
-        {"hyperbola", builtin::linux::logo_Hyperbola},
-        {"hyperbola_small", builtin::linux::logo_Hyperbola_small},
-        {"irix", builtin::linux::logo_IRIX},
-        {"iglunix", builtin::linux::logo_Iglunix},
-        {"ironclad", builtin::linux::logo_Ironclad},
-        {"itc", builtin::linux::logo_Itc},
-        {"kiss", builtin::linux::logo_KISS},
-        {"kslinux", builtin::linux::logo_KSLinux},
-        {"kaos", builtin::linux::logo_KaOS},
-        {"kaisen", builtin::linux::logo_Kaisen},
-        {"kali", builtin::linux::logo_Kali},
-        {"kali_small", builtin::linux::logo_Kali_small},
-        {"kernelos", builtin::linux::logo_KernelOS},
-        {"kibaos", builtin::linux::logo_KibaOS},
-        {"kibojoe", builtin::linux::logo_Kibojoe},
-        {"kogaion", builtin::linux::logo_Kogaion},
-        {"korora", builtin::linux::logo_Korora},
-        {"krassos", builtin::linux::logo_KrassOS},
-        {"kylin", builtin::linux::logo_Kylin},
-        {"lmde", builtin::linux::logo_LMDE},
-        {"lainos", builtin::linux::logo_LainOS},
-        {"laxeros", builtin::linux::logo_Laxeros},
-        {"libreelec", builtin::linux::logo_LibreELEC},
-        {"lilidog", builtin::linux::logo_Lilidog},
-        {"limeos", builtin::linux::logo_LimeOS},
-        {"lingmo", builtin::linux::logo_Lingmo},
-        {"linspire", builtin::linux::logo_Linspire},
-        {"linux", builtin::linux::logo_Linux},
-        {"linuxfromscratch", builtin::linux::logo_LinuxFromScratch},
-        {"linuxlite", builtin::linux::logo_LinuxLite},
-        {"linuxlite_small", builtin::linux::logo_LinuxLite_small},
-        {"linux_small", builtin::linux::logo_Linux_small},
-        {"live raizo", builtin::linux::logo_Live_Raizo},
-        {"lliurex", builtin::linux::logo_LliureX},
-        {"lunar", builtin::linux::logo_Lunar},
-        {"mos", builtin::linux::logo_MOS},
-        {"macaroni", builtin::linux::logo_Macaroni},
-        {"mageia", builtin::linux::logo_Mageia},
-        {"mageia_small", builtin::linux::logo_Mageia_small},
-        {"magix", builtin::linux::logo_Magix},
-        {"magpieos", builtin::linux::logo_MagpieOS},
-        {"mainsailos", builtin::linux::logo_MainsailOS},
-        {"massos", builtin::linux::logo_MassOS},
-        {"mauna", builtin::linux::logo_Mauna},
-        {"meowix", builtin::linux::logo_Meowix},
-        {"mer", builtin::linux::logo_Mer},
-        {"minimal_system", builtin::linux::logo_Minimal_System},
-        {"minix", builtin::linux::logo_Minix},
-        {"msys2", builtin::linux::logo_Msys2},
-        {"namib", builtin::linux::logo_Namib},
-        {"nekos", builtin::linux::logo_Nekos},
-        {"neptune", builtin::linux::logo_Neptune},
-        {"nitrux", builtin::linux::logo_Nitrux},
-        {"nixos", builtin::linux::logo_NixOS},
-        {"nixos2", builtin::linux::logo_NixOS2},
-        {"nixos_small", builtin::linux::logo_NixOS_small},
-        {"nutyx", builtin::linux::logo_NuTyX},
-        {"nuros", builtin::linux::logo_NurOS},
-        {"nurunner", builtin::linux::logo_Nurunner},
-        {"opnsense", builtin::linux::logo_OPNsense},
-        {"osmc", builtin::linux::logo_OSMC},
-        {"os elbrus", builtin::linux::logo_OS_Elbrus},
-        {"obarun", builtin::linux::logo_Obarun},
-        {"obsidianos", builtin::linux::logo_ObsidianOS},
-        {"openeuler", builtin::linux::logo_OpenEuler},
-        {"openindiana", builtin::linux::logo_OpenIndiana},
-        {"openmamba", builtin::linux::logo_OpenMamba},
-        {"openstage", builtin::linux::logo_OpenStage},
-        {"oreon", builtin::linux::logo_Oreon},
-        {"origami", builtin::linux::logo_Origami},
-        {"origami_small", builtin::linux::logo_Origami_small},
-        {"pclinuxos", builtin::linux::logo_PCLinuxOS},
-        {"pnm linux", builtin::linux::logo_PNM_Linux},
-        {"panwah", builtin::linux::logo_Panwah},
-        {"parch", builtin::linux::logo_Parch},
-        {"pardus", builtin::linux::logo_Pardus},
-        {"parrot", builtin::linux::logo_Parrot},
-        {"parsix", builtin::linux::logo_Parsix},
-        {"pearos", builtin::linux::logo_PearOS},
-        {"peropesis", builtin::linux::logo_Peropesis},
-        {"phyos", builtin::linux::logo_PhyOS},
-        {"pikaos", builtin::linux::logo_PikaOS},
-        {"pisilinux", builtin::linux::logo_PisiLinux},
-        {"porteus", builtin::linux::logo_Porteus},
-        {"prismlinux", builtin::linux::logo_PrismLinux},
-        {"prismlinux_small", builtin::linux::logo_PrismLinux_small},
-        {"proxmox", builtin::linux::logo_Proxmox},
-        {"puffos", builtin::linux::logo_PuffOS},
-        {"puppy", builtin::linux::logo_Puppy},
-        {"pureos", builtin::linux::logo_PureOS},
-        {"q4os", builtin::linux::logo_Q4OS},
-        {"quasar", builtin::linux::logo_Quasar},
-        {"qubes", builtin::linux::logo_Qubes},
-        {"qubyt", builtin::linux::logo_Qubyt},
-        {"quibian", builtin::linux::logo_Quibian},
-        {"quirinux", builtin::linux::logo_Quirinux},
-        {"radix", builtin::linux::logo_Radix},
-        {"ravynos", builtin::linux::logo_RavynOS},
-        {"rebornos", builtin::linux::logo_RebornOS},
-        {"redos", builtin::linux::logo_RedOS},
-        {"redrose", builtin::linux::logo_Redrose},
-        {"refracta", builtin::linux::logo_Refracta},
-        {"regata", builtin::linux::logo_Regata},
-        {"regolith", builtin::linux::logo_Regolith},
-        {"rengeos", builtin::linux::logo_RengeOS},
-        {"rhino linux", builtin::linux::logo_Rhino_Linux},
-        {"sabayon", builtin::linux::logo_Sabayon},
-        {"sabotage", builtin::linux::logo_Sabotage},
-        {"sailfish", builtin::linux::logo_Sailfish},
-        {"salix", builtin::linux::logo_Salix},
-        {"sasanqua", builtin::linux::logo_Sasanqua},
-        {"septor", builtin::linux::logo_Septor},
-        {"serene", builtin::linux::logo_Serene},
-        {"sharklinux", builtin::linux::logo_SharkLinux},
-        {"shastraos", builtin::linux::logo_ShastraOS},
-        {"shebang", builtin::linux::logo_Shebang},
-        {"siduction", builtin::linux::logo_Siduction},
-        {"skiffos", builtin::linux::logo_SkiffOS},
-        {"slackel", builtin::linux::logo_Slackel},
-        {"slackware", builtin::linux::logo_Slackware},
-        {"slackware_small", builtin::linux::logo_Slackware_small},
-        {"sleeperos", builtin::linux::logo_SleeperOS},
-        {"slitaz", builtin::linux::logo_Slitaz},
-        {"snigdhaos", builtin::linux::logo_SnigdhaOS},
-        {"soda", builtin::linux::logo_Soda},
-        {"solus", builtin::linux::logo_Solus},
-        {"source mage", builtin::linux::logo_Source_Mage},
-        {"sparky", builtin::linux::logo_Sparky},
-        {"spoinkos", builtin::linux::logo_SpoinkOS},
-        {"star", builtin::linux::logo_Star},
-        {"steamos", builtin::linux::logo_SteamOS},
-        {"stock linux", builtin::linux::logo_Stock_Linux},
-        {"sulin", builtin::linux::logo_Sulin},
-        {"summitos", builtin::linux::logo_SummitOS},
-        {"swagarch", builtin::linux::logo_Swagarch},
-        {"tails", builtin::linux::logo_Tails},
-        {"tatra", builtin::linux::logo_Tatra},
-        {"tearch", builtin::linux::logo_TeArch},
-        {"templeos", builtin::linux::logo_TempleOS},
-        {"tileos", builtin::linux::logo_TileOS},
-        {"torizon os", builtin::linux::logo_Torizon_OS},
-        {"trisquel", builtin::linux::logo_Trisquel},
-        {"turkish", builtin::linux::logo_Turkish},
-        {"tuxedo os", builtin::linux::logo_Tuxedo_OS},
-        {"twister", builtin::linux::logo_Twister},
-        {"ublinux", builtin::linux::logo_UBLinux},
-        {"ublinux_small", builtin::linux::logo_UBLinux_small},
-        {"uos", builtin::linux::logo_UOS},
-        {"ultramarine", builtin::linux::logo_Ultramarine},
-        {"ultramarine_small", builtin::linux::logo_Ultramarine_small},
-        {"unifi", builtin::linux::logo_Unifi},
-        {"urukos", builtin::linux::logo_UrukOS},
-        {"uzbek", builtin::linux::logo_Uzbek},
-        {"valhalla", builtin::linux::logo_Valhalla},
-        {"venom", builtin::linux::logo_Venom},
-        {"venom_small", builtin::linux::logo_Venom_small},
-        {"vnux", builtin::linux::logo_Vnux},
-        {"vzlinux", builtin::linux::logo_Vzlinux},
-        {"wiilinuxngx", builtin::linux::logo_WiiLinuxNgx},
-        {"wolfos", builtin::linux::logo_WolfOS},
-        {"xcp-ng", builtin::linux::logo_XCP_ng},
-        {"xj380", builtin::linux::logo_XJ380},
-        {"xenia", builtin::linux::logo_Xenia},
-        {"xenia_old", builtin::linux::logo_Xenia_old},
-        {"xeroarch", builtin::linux::logo_XeroArch},
-        {"xferience", builtin::linux::logo_Xferience},
-        {"ximper", builtin::linux::logo_Ximper},
-        {"xinux", builtin::linux::logo_Xinux},
-        {"xray_os", builtin::linux::logo_Xray_OS},
-        {"yiffos", builtin::linux::logo_YiffOS},
-        {"zerene", builtin::linux::logo_Zerene},
-        {"zorin", builtin::linux::logo_Zorin},
-        {"zraxyl", builtin::linux::logo_Zraxyl},
-        {"aeros", builtin::linux::logo_aerOS},
-        {"aix", builtin::linux::logo_aix},
-        {"alpine2_small", builtin::linux::logo_alpine2_small},
-        {"alpine3_small", builtin::linux::logo_alpine3_small},
-        {"anduinos", builtin::linux::logo_anduinos},
-        {"arch", builtin::linux::logo_arch},
-        {"arch2", builtin::linux::logo_arch2},
-        {"arch3", builtin::linux::logo_arch3},
-        {"arch_old", builtin::linux::logo_arch_old},
-        {"arch_small", builtin::linux::logo_arch_small},
-        {"arco", builtin::linux::logo_arco},
-        {"arse", builtin::linux::logo_arse},
-        {"artix", builtin::linux::logo_artix},
-        {"asahi", builtin::linux::logo_asahi},
-        {"asahi2", builtin::linux::logo_asahi2},
-        {"aster", builtin::linux::logo_aster},
-        {"bedrock", builtin::linux::logo_bedrock},
-        {"cycledream", builtin::linux::logo_cycledream},
-        {"elbrus", builtin::linux::logo_elbrus},
-        {"fedora-asahi-remix", builtin::linux::logo_fedora_asahi_remix},
-        {"filotimo", builtin::linux::logo_filotimo},
-        {"gnewsense", builtin::linux::logo_gNewSense},
-        {"hypros", builtin::linux::logo_hypros},
-        {"januslinux", builtin::linux::logo_januslinux},
-        {"kdelinux", builtin::linux::logo_kdelinux},
-        {"kiss2", builtin::linux::logo_kiss2},
-        {"langitketujuh", builtin::linux::logo_langitketujuh},
-        {"locos", builtin::linux::logo_locos},
-        {"mandriva", builtin::linux::logo_mandriva},
-        {"manjaro", builtin::linux::logo_manjaro},
-        {"manjaro_small", builtin::linux::logo_manjaro_small},
-        {"miraclelinux", builtin::linux::logo_miraclelinux},
-        {"nexalinux", builtin::linux::logo_nexalinux},
-        {"nixos_old", builtin::linux::logo_nixos_old},
-        {"nixos_old_small", builtin::linux::logo_nixos_old_small},
-        {"nobara", builtin::linux::logo_nobara},
-        {"openkylin", builtin::linux::logo_openkylin},
-        {"openmandriva", builtin::linux::logo_openmandriva},
-        {"opensuse", builtin::linux::logo_opensuse},
-        {"opensuse-leap", builtin::linux::logo_opensuse_leap},
-        {"opensuse-leap_old", builtin::linux::logo_opensuse_leap_old},
-        {"opensuse-microos", builtin::linux::logo_opensuse_microos},
-        {"opensuse-slowroll", builtin::linux::logo_opensuse_slowroll},
-        {"opensuse_small", builtin::linux::logo_opensuse_small},
-        {"opensuse-tumbleweed", builtin::linux::logo_opensuse_tumbleweed},
-        {"opensuse-tumbleweed2", builtin::linux::logo_opensuse_tumbleweed2},
-        {"opensuse-tumbleweed_old", builtin::linux::logo_opensuse_tumbleweed_old},
-        {"opensuse-tumbleweed_small", builtin::linux::logo_opensuse_tumbleweed_small},
-        {"openwrt", builtin::linux::logo_openwrt},
-        {"oracle", builtin::linux::logo_oracle},
-        {"orchid", builtin::linux::logo_orchid},
-        {"parabola", builtin::linux::logo_parabola},
-        {"pop", builtin::linux::logo_pop},
-        {"pop_small", builtin::linux::logo_pop_small},
-        {"qts", builtin::linux::logo_qts},
-        {"raspbian", builtin::linux::logo_raspbian},
-        {"redstar", builtin::linux::logo_redstar},
-        {"rhel", builtin::linux::logo_rhel},
-        {"rocky", builtin::linux::logo_rocky},
-        {"rosa", builtin::linux::logo_rosa},
-        {"secureblue", builtin::linux::logo_secureblue},
-        {"semc", builtin::linux::logo_semc},
-        {"suse", builtin::linux::logo_suse},
-        {"suse_small", builtin::linux::logo_suse_small},
-        {"vanilla", builtin::linux::logo_vanilla},
-        {"vanilla2", builtin::linux::logo_vanilla2},
-        {"void", builtin::linux::logo_void},
-        {"void2", builtin::linux::logo_void2},
-        {"void2_small", builtin::linux::logo_void2_small},
-        {"void_small", builtin::linux::logo_void_small},
+        {"altlinux", builtin::cat_linux::logo_ALTLinux},
+        {"archlabs", builtin::cat_linux::logo_ARCHlabs},
+        {"aeon", builtin::cat_linux::logo_Aeon},
+        {"aerynos", builtin::cat_linux::logo_AerynOS},
+        {"afterglow", builtin::cat_linux::logo_Afterglow},
+        {"almalinux", builtin::cat_linux::logo_Almalinux},
+        {"alpine", builtin::cat_linux::logo_Alpine},
+        {"alpine2", builtin::cat_linux::logo_Alpine2},
+        {"alpine_small", builtin::cat_linux::logo_Alpine_small},
+        {"alter", builtin::cat_linux::logo_Alter},
+        {"amazon", builtin::cat_linux::logo_Amazon},
+        {"amazon linux", builtin::cat_linux::logo_Amazon_Linux},
+        {"amiga", builtin::cat_linux::logo_Amiga},
+        {"anarchy", builtin::cat_linux::logo_Anarchy},
+        {"antergos", builtin::cat_linux::logo_Antergos},
+        {"anushos", builtin::cat_linux::logo_AnushOS},
+        {"aosc os", builtin::cat_linux::logo_Aosc_OS},
+        {"aosc os/retro", builtin::cat_linux::logo_Aosc_OS_Retro},
+        {"aosc os/retro_small", builtin::cat_linux::logo_Aosc_OS_Retro_small},
+        {"aosc os_old", builtin::cat_linux::logo_Aosc_OS_old},
+        {"aperture", builtin::cat_linux::logo_Aperture},
+        {"apricity", builtin::cat_linux::logo_Apricity},
+        {"archbox", builtin::cat_linux::logo_ArchBox},
+        {"archstrike", builtin::cat_linux::logo_ArchStrike},
+        {"archcraft", builtin::cat_linux::logo_Archcraft},
+        {"archcraft2", builtin::cat_linux::logo_Archcraft2},
+        {"arkane", builtin::cat_linux::logo_Arkane},
+        {"armbian", builtin::cat_linux::logo_Armbian},
+        {"armbian2", builtin::cat_linux::logo_Armbian2},
+        {"arya", builtin::cat_linux::logo_Arya},
+        {"asteroidos", builtin::cat_linux::logo_AsteroidOS},
+        {"astra", builtin::cat_linux::logo_Astra},
+        {"ataraxia linux", builtin::cat_linux::logo_Ataraxia_Linux},
+        {"athenaos", builtin::cat_linux::logo_AthenaOS},
+        {"aurora", builtin::cat_linux::logo_Aurora},
+        {"axos", builtin::cat_linux::logo_AxOS},
+        {"azos", builtin::cat_linux::logo_Azos},
+        {"blag", builtin::cat_linux::logo_BLAG},
+        {"berserkarch", builtin::cat_linux::logo_BerserkArch},
+        {"biglinux", builtin::cat_linux::logo_BigLinux},
+        {"bitrig", builtin::cat_linux::logo_Bitrig},
+        {"blackmesa", builtin::cat_linux::logo_BlackMesa},
+        {"blackpanther", builtin::cat_linux::logo_BlackPanther},
+        {"blackarch", builtin::cat_linux::logo_Blackarch},
+        {"blankon", builtin::cat_linux::logo_BlankOn},
+        {"bluelight", builtin::cat_linux::logo_BlueLight},
+        {"bodhi", builtin::cat_linux::logo_Bodhi},
+        {"bonsai", builtin::cat_linux::logo_Bonsai},
+        {"bredos", builtin::cat_linux::logo_Bredos},
+        {"cbl-mariner", builtin::cat_linux::logo_CBL_Mariner},
+        {"cachyos", builtin::cat_linux::logo_CachyOS},
+        {"calculate", builtin::cat_linux::logo_Calculate},
+        {"calinix", builtin::cat_linux::logo_Calinix},
+        {"calinix_small", builtin::cat_linux::logo_Calinix_small},
+        {"carbs", builtin::cat_linux::logo_Carbs},
+        {"cel", builtin::cat_linux::logo_Cel},
+        {"centos", builtin::cat_linux::logo_CentOS},
+        {"centos_small", builtin::cat_linux::logo_CentOS_small},
+        {"center", builtin::cat_linux::logo_Center},
+        {"cereus", builtin::cat_linux::logo_Cereus},
+        {"chakra", builtin::cat_linux::logo_Chakra},
+        {"chaletos", builtin::cat_linux::logo_ChaletOS},
+        {"chapeau", builtin::cat_linux::logo_Chapeau},
+        {"chimera", builtin::cat_linux::logo_Chimera},
+        {"chonkysealos", builtin::cat_linux::logo_ChonkySealOS},
+        {"chrom", builtin::cat_linux::logo_Chrom},
+        {"cleanjaro", builtin::cat_linux::logo_Cleanjaro},
+        {"cleanjaro_small", builtin::cat_linux::logo_Cleanjaro_small},
+        {"clearos", builtin::cat_linux::logo_ClearOS},
+        {"clear linux", builtin::cat_linux::logo_Clear_Linux},
+        {"clover", builtin::cat_linux::logo_Clover},
+        {"cobalt", builtin::cat_linux::logo_Cobalt},
+        {"codex linux", builtin::cat_linux::logo_Codex_Linux},
+        {"condres", builtin::cat_linux::logo_Condres},
+        {"containerlinux", builtin::cat_linux::logo_ContainerLinux},
+        {"cosmic", builtin::cat_linux::logo_Cosmic},
+        {"crystal", builtin::cat_linux::logo_Crystal},
+        {"cucumber", builtin::cat_linux::logo_Cucumber},
+        {"cuerdos", builtin::cat_linux::logo_CuerdOS},
+        {"cuteos", builtin::cat_linux::logo_CuteOS},
+        {"cutefishos", builtin::cat_linux::logo_CutefishOS},
+        {"cyberos", builtin::cat_linux::logo_CyberOS},
+        {"darkos", builtin::cat_linux::logo_DarkOS},
+        {"debian", builtin::cat_linux::logo_Debian},
+        {"debian_small", builtin::cat_linux::logo_Debian_small},
+        {"deepin", builtin::cat_linux::logo_Deepin},
+        {"devuan", builtin::cat_linux::logo_Devuan},
+        {"devuan_small", builtin::cat_linux::logo_Devuan_small},
+        {"dietpi", builtin::cat_linux::logo_DietPi},
+        {"dracos", builtin::cat_linux::logo_DracOS},
+        {"draugeros", builtin::cat_linux::logo_DraugerOS},
+        {"droidian", builtin::cat_linux::logo_Droidian},
+        {"elementary", builtin::cat_linux::logo_Elementary},
+        {"elementary_small", builtin::cat_linux::logo_Elementary_small},
+        {"elive", builtin::cat_linux::logo_Elive},
+        {"emmabuntus", builtin::cat_linux::logo_Emmabuntus},
+        {"emperor", builtin::cat_linux::logo_Emperor},
+        {"encryptos", builtin::cat_linux::logo_EncryptOS},
+        {"endeavouros", builtin::cat_linux::logo_EndeavourOS},
+        {"endless", builtin::cat_linux::logo_Endless},
+        {"enso", builtin::cat_linux::logo_Enso},
+        {"eshanizedos", builtin::cat_linux::logo_EshanizedOS},
+        {"eurolinux", builtin::cat_linux::logo_EuroLinux},
+        {"evolutionos", builtin::cat_linux::logo_EvolutionOS},
+        {"exherbo", builtin::cat_linux::logo_Exherbo},
+        {"exodia", builtin::cat_linux::logo_Exodia},
+        {"fastfetch", builtin::cat_linux::logo_Fastfetch},
+        {"fedora", builtin::cat_linux::logo_Fedora},
+        {"fedora2_small", builtin::cat_linux::logo_Fedora2_small},
+        {"fedora-coreos", builtin::cat_linux::logo_Fedora_CoreOS},
+        {"fedora-kinoite", builtin::cat_linux::logo_Fedora_Kinoite},
+        {"fedora-sericea", builtin::cat_linux::logo_Fedora_Sericea},
+        {"fedora-silverblue", builtin::cat_linux::logo_Fedora_Silverblue},
+        {"fedora_old", builtin::cat_linux::logo_Fedora_old},
+        {"fedora_small", builtin::cat_linux::logo_Fedora_small},
+        {"femboyos", builtin::cat_linux::logo_FemboyOS},
+        {"feren", builtin::cat_linux::logo_Feren},
+        {"finnix", builtin::cat_linux::logo_Finnix},
+        {"floflis", builtin::cat_linux::logo_Floflis},
+        {"freemint", builtin::cat_linux::logo_FreeMiNT},
+        {"frugalware", builtin::cat_linux::logo_Frugalware},
+        {"funtoo", builtin::cat_linux::logo_Funtoo},
+        {"furreto", builtin::cat_linux::logo_Furreto},
+        {"gnome os", builtin::cat_linux::logo_GNOME_OS},
+        {"gnu", builtin::cat_linux::logo_GNU},
+        {"gxde", builtin::cat_linux::logo_GXDE},
+        {"galliumos", builtin::cat_linux::logo_GalliumOS},
+        {"garuda", builtin::cat_linux::logo_Garuda},
+        {"garudadragon", builtin::cat_linux::logo_GarudaDragon},
+        {"garuda_small", builtin::cat_linux::logo_Garuda_small},
+        {"gentoo", builtin::cat_linux::logo_Gentoo},
+        {"gentoo_small", builtin::cat_linux::logo_Gentoo_small},
+        {"glaucus", builtin::cat_linux::logo_Glaucus},
+        {"gobolinux", builtin::cat_linux::logo_GoboLinux},
+        {"goldendog linux", builtin::cat_linux::logo_GoldenDog_Linux},
+        {"grombyang", builtin::cat_linux::logo_Grombyang},
+        {"guix", builtin::cat_linux::logo_Guix},
+        {"guix_small", builtin::cat_linux::logo_Guix_small},
+        {"haiku", builtin::cat_linux::logo_Haiku},
+        {"haiku2", builtin::cat_linux::logo_Haiku2},
+        {"haiku_small", builtin::cat_linux::logo_Haiku_small},
+        {"harmonyos", builtin::cat_linux::logo_HarmonyOS},
+        {"hash", builtin::cat_linux::logo_Hash},
+        {"heliumos", builtin::cat_linux::logo_HeliumOS},
+        {"huawei cloud euleros", builtin::cat_linux::logo_Huawei_Cloud_EulerOS},
+        {"huayra", builtin::cat_linux::logo_Huayra},
+        {"hybrid", builtin::cat_linux::logo_Hybrid},
+        {"hydroos", builtin::cat_linux::logo_HydroOS},
+        {"hyperbola", builtin::cat_linux::logo_Hyperbola},
+        {"hyperbola_small", builtin::cat_linux::logo_Hyperbola_small},
+        {"irix", builtin::cat_linux::logo_IRIX},
+        {"iglunix", builtin::cat_linux::logo_Iglunix},
+        {"instantos", builtin::cat_linux::logo_InstantOS},
+        {"interix", builtin::cat_linux::logo_Interix},
+        {"ironclad", builtin::cat_linux::logo_Ironclad},
+        {"itc", builtin::cat_linux::logo_Itc},
+        {"kiss", builtin::cat_linux::logo_KISS},
+        {"kslinux", builtin::cat_linux::logo_KSLinux},
+        {"kaos", builtin::cat_linux::logo_KaOS},
+        {"kaisen", builtin::cat_linux::logo_Kaisen},
+        {"kali", builtin::cat_linux::logo_Kali},
+        {"kali_small", builtin::cat_linux::logo_Kali_small},
+        {"kernelos", builtin::cat_linux::logo_KernelOS},
+        {"kibaos", builtin::cat_linux::logo_KibaOS},
+        {"kibojoe", builtin::cat_linux::logo_Kibojoe},
+        {"kogaion", builtin::cat_linux::logo_Kogaion},
+        {"korora", builtin::cat_linux::logo_Korora},
+        {"krassos", builtin::cat_linux::logo_KrassOS},
+        {"kubuntu", builtin::cat_linux::logo_Kubuntu},
+        {"kylin", builtin::cat_linux::logo_Kylin},
+        {"lmde", builtin::cat_linux::logo_LMDE},
+        {"lainos", builtin::cat_linux::logo_LainOS},
+        {"laxeros", builtin::cat_linux::logo_Laxeros},
+        {"libreelec", builtin::cat_linux::logo_LibreELEC},
+        {"lilidog", builtin::cat_linux::logo_Lilidog},
+        {"limeos", builtin::cat_linux::logo_LimeOS},
+        {"lingmo", builtin::cat_linux::logo_Lingmo},
+        {"linspire", builtin::cat_linux::logo_Linspire},
+        {"linux", builtin::cat_linux::logo_Linux},
+        {"linuxfromscratch", builtin::cat_linux::logo_LinuxFromScratch},
+        {"linuxlite", builtin::cat_linux::logo_LinuxLite},
+        {"linuxlite_small", builtin::cat_linux::logo_LinuxLite_small},
+        {"linux_small", builtin::cat_linux::logo_Linux_small},
+        {"live raizo", builtin::cat_linux::logo_Live_Raizo},
+        {"lliurex", builtin::cat_linux::logo_LliureX},
+        {"lunar", builtin::cat_linux::logo_Lunar},
+        {"mos", builtin::cat_linux::logo_MOS},
+        {"macaroni", builtin::cat_linux::logo_Macaroni},
+        {"mageia", builtin::cat_linux::logo_Mageia},
+        {"mageia_small", builtin::cat_linux::logo_Mageia_small},
+        {"magix", builtin::cat_linux::logo_Magix},
+        {"magpieos", builtin::cat_linux::logo_MagpieOS},
+        {"mainsailos", builtin::cat_linux::logo_MainsailOS},
+        {"massos", builtin::cat_linux::logo_MassOS},
+        {"mauna", builtin::cat_linux::logo_Mauna},
+        {"meowix", builtin::cat_linux::logo_Meowix},
+        {"mer", builtin::cat_linux::logo_Mer},
+        {"minimal_system", builtin::cat_linux::logo_Minimal_System},
+        {"minix", builtin::cat_linux::logo_Minix},
+        {"msys2", builtin::cat_linux::logo_Msys2},
+        {"namib", builtin::cat_linux::logo_Namib},
+        {"nekos", builtin::cat_linux::logo_Nekos},
+        {"neptune", builtin::cat_linux::logo_Neptune},
+        {"nitrux", builtin::cat_linux::logo_Nitrux},
+        {"nixos", builtin::cat_linux::logo_NixOS},
+        {"nixos2", builtin::cat_linux::logo_NixOS2},
+        {"nixos_small", builtin::cat_linux::logo_NixOS_small},
+        {"nutyx", builtin::cat_linux::logo_NuTyX},
+        {"nuros", builtin::cat_linux::logo_NurOS},
+        {"nurunner", builtin::cat_linux::logo_Nurunner},
+        {"opnsense", builtin::cat_linux::logo_OPNsense},
+        {"osmc", builtin::cat_linux::logo_OSMC},
+        {"os elbrus", builtin::cat_linux::logo_OS_Elbrus},
+        {"obarun", builtin::cat_linux::logo_Obarun},
+        {"obsidianos", builtin::cat_linux::logo_ObsidianOS},
+        {"openeuler", builtin::cat_linux::logo_OpenEuler},
+        {"openindiana", builtin::cat_linux::logo_OpenIndiana},
+        {"openmamba", builtin::cat_linux::logo_OpenMamba},
+        {"openstage", builtin::cat_linux::logo_OpenStage},
+        {"oreon", builtin::cat_linux::logo_Oreon},
+        {"origami", builtin::cat_linux::logo_Origami},
+        {"origami_small", builtin::cat_linux::logo_Origami_small},
+        {"pclinuxos", builtin::cat_linux::logo_PCLinuxOS},
+        {"pnm linux", builtin::cat_linux::logo_PNM_Linux},
+        {"panwah", builtin::cat_linux::logo_Panwah},
+        {"parch", builtin::cat_linux::logo_Parch},
+        {"pardus", builtin::cat_linux::logo_Pardus},
+        {"parrot", builtin::cat_linux::logo_Parrot},
+        {"parsix", builtin::cat_linux::logo_Parsix},
+        {"pearos", builtin::cat_linux::logo_PearOS},
+        {"pentoo", builtin::cat_linux::logo_Pentoo},
+        {"peppermint", builtin::cat_linux::logo_Peppermint},
+        {"peropesis", builtin::cat_linux::logo_Peropesis},
+        {"phyos", builtin::cat_linux::logo_PhyOS},
+        {"pikaos", builtin::cat_linux::logo_PikaOS},
+        {"pisilinux", builtin::cat_linux::logo_PisiLinux},
+        {"porteus", builtin::cat_linux::logo_Porteus},
+        {"prismlinux", builtin::cat_linux::logo_PrismLinux},
+        {"prismlinux_small", builtin::cat_linux::logo_PrismLinux_small},
+        {"proxmox", builtin::cat_linux::logo_Proxmox},
+        {"puffos", builtin::cat_linux::logo_PuffOS},
+        {"puppy", builtin::cat_linux::logo_Puppy},
+        {"pureos", builtin::cat_linux::logo_PureOS},
+        {"q4os", builtin::cat_linux::logo_Q4OS},
+        {"quasar", builtin::cat_linux::logo_Quasar},
+        {"qubes", builtin::cat_linux::logo_Qubes},
+        {"qubyt", builtin::cat_linux::logo_Qubyt},
+        {"quibian", builtin::cat_linux::logo_Quibian},
+        {"quirinux", builtin::cat_linux::logo_Quirinux},
+        {"radix", builtin::cat_linux::logo_Radix},
+        {"ravynos", builtin::cat_linux::logo_RavynOS},
+        {"rebornos", builtin::cat_linux::logo_RebornOS},
+        {"redos", builtin::cat_linux::logo_RedOS},
+        {"redrose", builtin::cat_linux::logo_Redrose},
+        {"refracta", builtin::cat_linux::logo_Refracta},
+        {"regata", builtin::cat_linux::logo_Regata},
+        {"regolith", builtin::cat_linux::logo_Regolith},
+        {"rengeos", builtin::cat_linux::logo_RengeOS},
+        {"rhino linux", builtin::cat_linux::logo_Rhino_Linux},
+        {"sabayon", builtin::cat_linux::logo_Sabayon},
+        {"sabotage", builtin::cat_linux::logo_Sabotage},
+        {"sailfish", builtin::cat_linux::logo_Sailfish},
+        {"salient os", builtin::cat_linux::logo_Salient_OS},
+        {"salix", builtin::cat_linux::logo_Salix},
+        {"sasanqua", builtin::cat_linux::logo_Sasanqua},
+        {"scientific", builtin::cat_linux::logo_Scientific},
+        {"septor", builtin::cat_linux::logo_Septor},
+        {"serene", builtin::cat_linux::logo_Serene},
+        {"serpent os", builtin::cat_linux::logo_Serpent_OS},
+        {"sharklinux", builtin::cat_linux::logo_SharkLinux},
+        {"shastraos", builtin::cat_linux::logo_ShastraOS},
+        {"shebang", builtin::cat_linux::logo_Shebang},
+        {"siduction", builtin::cat_linux::logo_Siduction},
+        {"skiffos", builtin::cat_linux::logo_SkiffOS},
+        {"slackel", builtin::cat_linux::logo_Slackel},
+        {"slackware", builtin::cat_linux::logo_Slackware},
+        {"slackware_small", builtin::cat_linux::logo_Slackware_small},
+        {"sleeperos", builtin::cat_linux::logo_SleeperOS},
+        {"slitaz", builtin::cat_linux::logo_Slitaz},
+        {"snigdhaos", builtin::cat_linux::logo_SnigdhaOS},
+        {"soda", builtin::cat_linux::logo_Soda},
+        {"solus", builtin::cat_linux::logo_Solus},
+        {"source mage", builtin::cat_linux::logo_Source_Mage},
+        {"sparky", builtin::cat_linux::logo_Sparky},
+        {"spoinkos", builtin::cat_linux::logo_SpoinkOS},
+        {"star", builtin::cat_linux::logo_Star},
+        {"steamos", builtin::cat_linux::logo_SteamOS},
+        {"stock linux", builtin::cat_linux::logo_Stock_Linux},
+        {"sulin", builtin::cat_linux::logo_Sulin},
+        {"swagarch", builtin::cat_linux::logo_Swagarch},
+        {"tails", builtin::cat_linux::logo_Tails},
+        {"tatra", builtin::cat_linux::logo_Tatra},
+        {"tearch", builtin::cat_linux::logo_TeArch},
+        {"templeos", builtin::cat_linux::logo_TempleOS},
+        {"tileos", builtin::cat_linux::logo_TileOS},
+        {"torizon os", builtin::cat_linux::logo_Torizon_OS},
+        {"trisquel", builtin::cat_linux::logo_Trisquel},
+        {"turkish", builtin::cat_linux::logo_Turkish},
+        {"tuxedo os", builtin::cat_linux::logo_Tuxedo_OS},
+        {"twister", builtin::cat_linux::logo_Twister},
+        {"ublinux", builtin::cat_linux::logo_UBLinux},
+        {"ublinux_small", builtin::cat_linux::logo_UBLinux_small},
+        {"uos", builtin::cat_linux::logo_UOS},
+        {"ultramarine", builtin::cat_linux::logo_Ultramarine},
+        {"ultramarine_small", builtin::cat_linux::logo_Ultramarine_small},
+        {"unifi", builtin::cat_linux::logo_Unifi},
+        {"univalent", builtin::cat_linux::logo_Univalent},
+        {"univention", builtin::cat_linux::logo_Univention},
+        {"urukos", builtin::cat_linux::logo_UrukOS},
+        {"uzbek", builtin::cat_linux::logo_Uzbek},
+        {"valhalla", builtin::cat_linux::logo_Valhalla},
+        {"venom", builtin::cat_linux::logo_Venom},
+        {"venom_small", builtin::cat_linux::logo_Venom_small},
+        {"vincentos", builtin::cat_linux::logo_VincentOS},
+        {"vnux", builtin::cat_linux::logo_Vnux},
+        {"vzlinux", builtin::cat_linux::logo_Vzlinux},
+        {"wiilinuxngx", builtin::cat_linux::logo_WiiLinuxNgx},
+        {"wolfos", builtin::cat_linux::logo_WolfOS},
+        {"xcp-ng", builtin::cat_linux::logo_XCP_ng},
+        {"xj380", builtin::cat_linux::logo_XJ380},
+        {"xenia", builtin::cat_linux::logo_Xenia},
+        {"xenia_old", builtin::cat_linux::logo_Xenia_old},
+        {"xeroarch", builtin::cat_linux::logo_XeroArch},
+        {"xferience", builtin::cat_linux::logo_Xferience},
+        {"ximper", builtin::cat_linux::logo_Ximper},
+        {"xinux", builtin::cat_linux::logo_Xinux},
+        {"xray_os", builtin::cat_linux::logo_Xray_OS},
+        {"xubuntu", builtin::cat_linux::logo_Xubuntu},
+        {"yiffos", builtin::cat_linux::logo_YiffOS},
+        {"zerene", builtin::cat_linux::logo_Zerene},
+        {"zorin", builtin::cat_linux::logo_Zorin},
+        {"zraxyl", builtin::cat_linux::logo_Zraxyl},
+        {"aeros", builtin::cat_linux::logo_aerOS},
+        {"aix", builtin::cat_linux::logo_aix},
+        {"alpine2_small", builtin::cat_linux::logo_alpine2_small},
+        {"alpine3_small", builtin::cat_linux::logo_alpine3_small},
+        {"anduinos", builtin::cat_linux::logo_anduinos},
+        {"antix", builtin::cat_linux::logo_antiX},
+        {"arch", builtin::cat_linux::logo_arch},
+        {"arch2", builtin::cat_linux::logo_arch2},
+        {"arch3", builtin::cat_linux::logo_arch3},
+        {"arch_old", builtin::cat_linux::logo_arch_old},
+        {"arch_small", builtin::cat_linux::logo_arch_small},
+        {"arco", builtin::cat_linux::logo_arco},
+        {"arse", builtin::cat_linux::logo_arse},
+        {"artix", builtin::cat_linux::logo_artix},
+        {"asahi", builtin::cat_linux::logo_asahi},
+        {"asahi2", builtin::cat_linux::logo_asahi2},
+        {"aster", builtin::cat_linux::logo_aster},
+        {"bedrock", builtin::cat_linux::logo_bedrock},
+        {"cycledream", builtin::cat_linux::logo_cycledream},
+        {"elbrus", builtin::cat_linux::logo_elbrus},
+        {"fedora-asahi-remix", builtin::cat_linux::logo_fedora_asahi_remix},
+        {"filotimo", builtin::cat_linux::logo_filotimo},
+        {"gnewsense", builtin::cat_linux::logo_gNewSense},
+        {"hypros", builtin::cat_linux::logo_hypros},
+        {"januslinux", builtin::cat_linux::logo_januslinux},
+        {"kalpa-desktop", builtin::cat_linux::logo_kalpa_desktop},
+        {"kdelinux", builtin::cat_linux::logo_kdelinux},
+        {"kiss2", builtin::cat_linux::logo_kiss2},
+        {"langitketujuh", builtin::cat_linux::logo_langitketujuh},
+        {"linuxmint", builtin::cat_linux::logo_linuxmint},
+        {"linuxmint2", builtin::cat_linux::logo_linuxmint2},
+        {"linuxmint_old", builtin::cat_linux::logo_linuxmint_old},
+        {"linuxmint_small", builtin::cat_linux::logo_linuxmint_small},
+        {"locos", builtin::cat_linux::logo_locos},
+        {"lubuntu", builtin::cat_linux::logo_lubuntu},
+        {"mandriva", builtin::cat_linux::logo_mandriva},
+        {"manjaro", builtin::cat_linux::logo_manjaro},
+        {"manjaro_small", builtin::cat_linux::logo_manjaro_small},
+        {"miraclelinux", builtin::cat_linux::logo_miraclelinux},
+        {"nexalinux", builtin::cat_linux::logo_nexalinux},
+        {"nixos_old", builtin::cat_linux::logo_nixos_old},
+        {"nixos_old_small", builtin::cat_linux::logo_nixos_old_small},
+        {"nobara", builtin::cat_linux::logo_nobara},
+        {"openkylin", builtin::cat_linux::logo_openkylin},
+        {"openmandriva", builtin::cat_linux::logo_openmandriva},
+        {"opensuse", builtin::cat_linux::logo_opensuse},
+        {"opensuse-leap", builtin::cat_linux::logo_opensuse_leap},
+        {"opensuse-leap_old", builtin::cat_linux::logo_opensuse_leap_old},
+        {"opensuse-microos", builtin::cat_linux::logo_opensuse_microos},
+        {"opensuse-slowroll", builtin::cat_linux::logo_opensuse_slowroll},
+        {"opensuse_small", builtin::cat_linux::logo_opensuse_small},
+        {"opensuse-tumbleweed", builtin::cat_linux::logo_opensuse_tumbleweed},
+        {"opensuse-tumbleweed2", builtin::cat_linux::logo_opensuse_tumbleweed2},
+        {"opensuse-tumbleweed_old", builtin::cat_linux::logo_opensuse_tumbleweed_old},
+        {"opensuse-tumbleweed_small", builtin::cat_linux::logo_opensuse_tumbleweed_small},
+        {"openwrt", builtin::cat_linux::logo_openwrt},
+        {"oracle", builtin::cat_linux::logo_oracle},
+        {"orchid", builtin::cat_linux::logo_orchid},
+        {"parabola", builtin::cat_linux::logo_parabola},
+        {"pop", builtin::cat_linux::logo_pop},
+        {"pop_small", builtin::cat_linux::logo_pop_small},
+        {"qts", builtin::cat_linux::logo_qts},
+        {"raspbian", builtin::cat_linux::logo_raspbian},
+        {"redstar", builtin::cat_linux::logo_redstar},
+        {"rhel", builtin::cat_linux::logo_rhel},
+        {"rocky", builtin::cat_linux::logo_rocky},
+        {"rosa", builtin::cat_linux::logo_rosa},
+        {"secureblue", builtin::cat_linux::logo_secureblue},
+        {"semc", builtin::cat_linux::logo_semc},
+        {"suse", builtin::cat_linux::logo_suse},
+        {"suse_small", builtin::cat_linux::logo_suse_small},
+        {"ubuntu", builtin::cat_linux::logo_ubuntu},
+        {"ubuntu budgie", builtin::cat_linux::logo_ubuntu_budgie},
+        {"ubuntu cinnamon", builtin::cat_linux::logo_ubuntu_cinnamon},
+        {"ubuntu gnome", builtin::cat_linux::logo_ubuntu_gnome},
+        {"ubuntu kylin", builtin::cat_linux::logo_ubuntu_kylin},
+        {"ubuntu mate", builtin::cat_linux::logo_ubuntu_mate},
+        {"ubuntu_old", builtin::cat_linux::logo_ubuntu_old},
+        {"ubuntu_old2", builtin::cat_linux::logo_ubuntu_old2},
+        {"ubuntu_old2_small", builtin::cat_linux::logo_ubuntu_old2_small},
+        {"ubuntu_small", builtin::cat_linux::logo_ubuntu_small},
+        {"ubuntu studio", builtin::cat_linux::logo_ubuntu_studio},
+        {"ubuntu sway", builtin::cat_linux::logo_ubuntu_sway},
+        {"ubuntu touch", builtin::cat_linux::logo_ubuntu_touch},
+        {"ubuntu unity", builtin::cat_linux::logo_ubuntu_unity},
+        {"uwuntu", builtin::cat_linux::logo_uwuntu},
+        {"vanilla", builtin::cat_linux::logo_vanilla},
+        {"vanilla2", builtin::cat_linux::logo_vanilla2},
+        {"void", builtin::cat_linux::logo_void},
+        {"void2", builtin::cat_linux::logo_void2},
+        {"void2_small", builtin::cat_linux::logo_void2_small},
+        {"void_small", builtin::cat_linux::logo_void_small},
     };
     return registry;
 }

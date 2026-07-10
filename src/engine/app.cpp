@@ -88,7 +88,9 @@ void App::run(int argc, char** argv) {
 
 void App::load_logo(const config::CliOptions& opts) {
     if (!opts.logo_name.empty()) {
-        if (!logo::load_logo_fastfetch(logo_, opts.logo_name.c_str()))
+        // Try library first, then fastfetch
+        if (!logo::load_logo_library(logo_, opts.logo_name.c_str()) &&
+            !logo::load_logo_fastfetch(logo_, opts.logo_name.c_str()))
             logo::load_default_logo(logo_);
         distro_ = opts.logo_name;
         return;
@@ -103,26 +105,28 @@ void App::load_logo(const config::CliOptions& opts) {
         distro_ = info.id;
     }
 
-    // Try fastfetch if no custom logo
+    // Try library or fastfetch if no custom logo
     bool got_logo = has_custom;
     if (!got_logo && !distro_.empty()) {
-        got_logo = logo::load_logo_fastfetch(logo_, distro_.c_str());
+        got_logo = logo::load_logo_library(logo_, distro_.c_str()) ||
+                   logo::load_logo_fastfetch(logo_, distro_.c_str());
         if (!got_logo) {
             // Try ID_LIKE fallback
             auto info = logo::detect_distro();
-            // Tokenize id_like by space
             std::string likes = info.id_like;
             std::size_t pos = 0;
             while (!got_logo && (pos = likes.find(' ')) != std::string::npos) {
                 std::string tok = likes.substr(0, pos);
                 likes = likes.substr(pos + 1);
-                if (logo::load_logo_fastfetch(logo_, tok.c_str())) {
+                if (logo::load_logo_library(logo_, tok.c_str()) ||
+                    logo::load_logo_fastfetch(logo_, tok.c_str())) {
                     got_logo = true;
                     distro_ = tok;
                 }
             }
             if (!got_logo && !likes.empty()) {
-                if (logo::load_logo_fastfetch(logo_, likes.c_str())) {
+                if (logo::load_logo_library(logo_, likes.c_str()) ||
+                    logo::load_logo_fastfetch(logo_, likes.c_str())) {
                     distro_ = likes;
                 }
             }
@@ -130,9 +134,6 @@ void App::load_logo(const config::CliOptions& opts) {
     }
     if (!got_logo && logo_.rows == 0) {
         logo::load_default_logo(logo_);
-        if (!distro_.empty() && distro_ != "gentoo")
-            std::fprintf(stderr, "rfxh: couldn't load %s logo (is fastfetch installed?). "
-                         "using built-in gentoo logo.\n", distro_.c_str());
     }
 }
 

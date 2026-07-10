@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 
-namespace rfxh::logo::builtin::android {
+namespace rfxh::logo::builtin::cat_android {
 
 inline std::vector<std::string> logo_android_small() {
     return {

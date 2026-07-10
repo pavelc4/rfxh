@@ -18,7 +18,7 @@
 #include "logo_solaris.hpp"
 #include "logo_solaris_small.hpp"
 
-namespace rfxh::logo::builtin_cat_bsd {
+namespace rfxh::logo::builtin::cat_bsd {
 
 using LogoFunc = std::function<std::vector<std::string>()>;
 
