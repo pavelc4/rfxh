@@ -38,6 +38,10 @@ add_executable(rfxh
     src/gather/desktop/terminal_info.cpp
     src/gather/desktop/net.cpp
     src/gather/desktop/gtk.cpp
+    src/render/pointcloud.cpp
+    src/render/rasterizer.cpp
+    src/render/output.cpp
 )
 
 target_include_directories(rfxh PRIVATE src)
+target_link_libraries(rfxh PRIVATE m)
