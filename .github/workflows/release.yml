@@ -2,6 +2,11 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag (e.g. v1.0.0)"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -164,12 +169,7 @@ jobs:
 
       - name: Resolve Tag
         id: resolve_tag
-        run: |
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
-          else
-            echo "tag=$(date +%Y%m%d-%H%M%S)" >> $GITHUB_OUTPUT
-          fi
+        run: echo "tag=${{ inputs.tag || github.ref_name }}" >> $GITHUB_OUTPUT
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
@@ -196,9 +196,9 @@ jobs:
           type: complete
           delete_message_id: ${{ needs.setup.outputs.notify_message_id }}
           caption: |
-            <b>rfxh ${{ github.ref_name }} Released!</b>
+            <b>rfxh ${{ inputs.tag }} Released!</b>
 
-            <a href="https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}">GitHub Release</a>
+            <a href="https://github.com/${{ github.repository }}/releases/tag/${{ inputs.tag }}">GitHub Release</a>
 
       - name: Notify Failure
         if: ${{ needs.release.result != 'success' && needs.setup.outputs.notify_message_id != '' }}
