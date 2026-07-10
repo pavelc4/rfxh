@@ -18,7 +18,7 @@ jobs:
       notify_message_id: ${{ steps.notify_start.outputs.message_id }}
       has_token: ${{ steps.check_token.outputs.has_token }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Check BOT_TOKEN
@@ -77,7 +77,7 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Dependencies (Linux)
         if: ${{ matrix.os == 'ubuntu-latest' && !matrix.ndk }}
@@ -152,7 +152,7 @@ jobs:
     needs: [setup, build]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Download Linux Binary
         if: ${{ needs.build.result == 'success' }}
