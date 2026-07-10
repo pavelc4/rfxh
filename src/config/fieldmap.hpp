@@ -1,8 +1,8 @@
 #pragma once
 
 #include "config/fields.hpp"
+#include "platform/process.hpp"
 #include <cstring>
-#include <strings.h>
 
 namespace rfxh::config {
 
@@ -39,7 +39,7 @@ inline constexpr FieldEntry kFieldMap[] = {
 // Look up a field name, returns F_COUNT if not found.
 inline Field lookup_field(const char* name) {
     for (int i = 0; kFieldMap[i].name; i++) {
-        if (strcasecmp(name, kFieldMap[i].name) == 0)
+        if (platform::case_insensitive_cmp(name, kFieldMap[i].name) == 0)
             return kFieldMap[i].id;
     }
     return F_COUNT;

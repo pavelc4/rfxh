@@ -1,9 +1,9 @@
 #include "logo/logo.hpp"
+#include "platform/process.hpp"
 #include "text/charweight.hpp"
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <strings.h>
 
 namespace rfxh::logo {
 
@@ -116,7 +116,7 @@ static bool load_logo_ff_plain(Logo& logo, const char* name) {
             // Look for "name:" header
             if (len > 0 && len <= name_len + 1 && buf[len-1] == ':') {
                 buf[len-1] = '\0';
-                if (strcasecmp(buf, name) == 0)
+                if (platform::case_insensitive_cmp(buf, name) == 0)
                     found = true;
             }
             continue;
