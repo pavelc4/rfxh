@@ -13,6 +13,7 @@
 #include "logo_an_android_17.hpp"
 #include "logo_android.hpp"
 #include "logo_android_small.hpp"
+#include "logo_an_robot.hpp"
 
 namespace rfxh::logo::builtin::cat_android {
 
@@ -34,6 +35,10 @@ inline const std::unordered_map<std::string, LogoFunc>& get_registry() {
         {"android_17", logo_an_android_17},
         {"android", logo_android},
         {"android small", logo_android_small},
+        {"android robot", logo_an_robot},
+        {"android_robot", logo_an_robot},
+        {"android_bugdroid", logo_an_robot},
+        {"bugdroid", logo_an_robot},
     };
     return registry;
 }
