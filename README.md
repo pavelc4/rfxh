@@ -10,7 +10,7 @@
 
 ## Preview
 
-<video src="docs/assets/preview.mp4" controls width="100%"></video>
+![rfxh 3D ASCII Preview](docs/asset/preview.gif)
 
 ## Features
 
