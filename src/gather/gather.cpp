@@ -37,6 +37,7 @@ void add_info(GatherContext& ctx, const char* label, const char* fmt, ...) {
     add_line(ctx, line);
 }
 
+#ifndef _WIN32
 void gather_title(GatherContext& ctx) {
     char user[64] = "";
     char host[64] = "";
@@ -78,5 +79,6 @@ void gather_colors(GatherContext& ctx) {
     add_line(ctx, "\033[40m   \033[0m \033[41m   \033[0m \033[42m   \033[0m \033[43m   \033[0m");
     add_line(ctx, "\033[44m   \033[0m \033[45m   \033[0m \033[46m   \033[0m \033[47m   \033[0m");
 }
+#endif // !_WIN32
 
 } // namespace rfxh::gather

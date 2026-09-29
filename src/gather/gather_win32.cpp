@@ -14,12 +14,12 @@ void add_line(GatherContext& ctx, const char* label, const char* value) {
                      ctx.cfg.label_color.c_str(), label, value);
         return;
     }
-    int slot = ctx.count;
+    int slot = ctx.line_count;
     if (slot >= 32) return;
     ctx.cfg.field_line[ctx.cfg.current_field] = slot;
     std::snprintf(ctx.lines[slot].data(), 512, "\033[%sm%s:\033[0m %s",
                  ctx.cfg.label_color.c_str(), label, value);
-    ctx.count++;
+    ctx.line_count++;
 }
 
 void gather_title(GatherContext& ctx) {
@@ -34,15 +34,15 @@ void gather_title(GatherContext& ctx) {
     for (int i = 0; i < 3; i++) title += " ";
     for (int i = 0; i < (int)title.size() - 12; i++) title += *sep;
 
-    int slot = ctx.count;
+    int slot = ctx.line_count;
     if (slot < 32) {
         std::snprintf(ctx.lines[slot].data(), 512, "%s", title.c_str());
-        ctx.count++;
+        ctx.line_count++;
     }
 }
 
 void gather_colors(GatherContext& ctx) {
-    int slot = ctx.count;
+    int slot = ctx.line_count;
     if (slot >= 32) return;
     char* buf = ctx.lines[slot].data();
     int off = 0;
@@ -51,7 +51,7 @@ void gather_colors(GatherContext& ctx) {
     for (int i = 100; i <= 107; i++)
         off += std::snprintf(buf + off, 512 - off, "\033[%dm   ", i);
     off += std::snprintf(buf + off, 512 - off, "\033[0m");
-    ctx.count++;
+    ctx.line_count++;
 }
 
 void gather_os(GatherContext& ctx) {

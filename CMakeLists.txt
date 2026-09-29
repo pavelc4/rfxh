@@ -107,4 +107,6 @@ target_compile_options(rfxh PRIVATE -Wno-trigraphs)
 
 if(NOT WIN32)
     target_link_libraries(rfxh PRIVATE m)
+else()
+    target_link_libraries(rfxh PRIVATE iphlpapi)
 endif()

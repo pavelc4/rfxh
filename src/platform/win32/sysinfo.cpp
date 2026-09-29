@@ -4,7 +4,10 @@
 
 #include <windows.h>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <string>
+#include <iphlpapi.h>
 
 namespace rfxh::platform {
 
@@ -30,19 +33,39 @@ OsInfo get_os_info() {
         }
     }
 
-    // Try to get product name from registry
+    // Try to get product name and version from registry
     char prod[256] = {};
-    DWORD prod_size = sizeof(prod);
+    char disp[64] = {};
+    char build_str[32] = {};
     HKEY key;
     if (RegOpenKeyExA(HKEY_LOCAL_MACHINE,
                       "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
                       0, KEY_READ, &key) == ERROR_SUCCESS) {
-        // Try "ProductName"
-        if (RegQueryValueExA(key, "ProductName", nullptr, nullptr,
-                            (LPBYTE)prod, &prod_size) == ERROR_SUCCESS) {
-            info.name = prod;
-        }
+        DWORD prod_size = sizeof(prod);
+        RegQueryValueExA(key, "ProductName", nullptr, nullptr,
+                         (LPBYTE)prod, &prod_size);
+        DWORD disp_size = sizeof(disp);
+        RegQueryValueExA(key, "DisplayVersion", nullptr, nullptr,
+                         (LPBYTE)disp, &disp_size);
+        DWORD build_size = sizeof(build_str);
+        RegQueryValueExA(key, "CurrentBuildNumber", nullptr, nullptr,
+                         (LPBYTE)build_str, &build_size);
         RegCloseKey(key);
+
+        // Some Windows 11 editions still report "Windows 10" in ProductName;
+        // fix that using the build number (>= 22000 means Windows 11).
+        int build = std::atoi(build_str);
+        if (build >= 22000 && std::strncmp(prod, "Windows 10", 10) == 0) {
+            prod[8] = '1';  // "Windows 10" -> "Windows 11" (same length)
+            prod[9] = '1';
+        }
+
+        info.name = prod;
+        if (disp[0]) {
+            info.name += " (";
+            info.name += disp;
+            info.name += ")";
+        }
     }
 
     if (info.name.empty()) {
@@ -62,8 +85,27 @@ HostInfo get_host_info() {
     GetComputerNameA(hostname, &size);
     info.hostname = hostname;
 
-    // Try WMI for product name (stub for now)
-    info.product = "unknown";
+    // Read model/manufacturer from registry
+    HKEY key;
+    if (RegOpenKeyExA(HKEY_LOCAL_MACHINE,
+                      "HARDWARE\\DESCRIPTION\\System\\BIOS",
+                      0, KEY_READ, &key) == ERROR_SUCCESS) {
+        char vendor[256] = {};
+        char product[256] = {};
+        DWORD s = sizeof(vendor);
+        RegQueryValueExA(key, "SystemManufacturer", nullptr, nullptr,
+                         (LPBYTE)vendor, &s);
+        s = sizeof(product);
+        RegQueryValueExA(key, "SystemProductName", nullptr, nullptr,
+                         (LPBYTE)product, &s);
+        RegCloseKey(key);
+
+        std::string model;
+        if (vendor[0]) { model += vendor; model += " "; }
+        if (product[0]) model += product;
+        if (!model.empty()) info.product = model;
+    }
+    if (info.product.empty()) info.product = "unknown";
     return info;
 }
 
@@ -112,9 +154,14 @@ std::string get_shell_info() {
 }
 
 std::string get_locale() {
-    char buf[LOCALE_NAME_MAX_LENGTH];
-    if (GetUserDefaultLocaleName(buf, LOCALE_NAME_MAX_LENGTH) > 0)
-        return buf;
+    wchar_t buf[LOCALE_NAME_MAX_LENGTH] = {0};
+    if (GetUserDefaultLocaleName(buf, LOCALE_NAME_MAX_LENGTH) > 0) {
+        char narrow[LOCALE_NAME_MAX_LENGTH * 4] = {0};
+        int len = WideCharToMultiByte(CP_UTF8, 0, buf, -1, narrow,
+                                      sizeof(narrow), nullptr, nullptr);
+        if (len > 0)
+            return narrow;
+    }
     return "unknown";
 }
 
@@ -124,13 +171,76 @@ CpuInfo get_cpu_info() {
     GetSystemInfo(&si);
     info.cores = si.dwNumberOfProcessors;
     info.threads = info.cores;
-    info.model = "unknown"; // Could use WMI for model name
+
+    HKEY key;
+    if (RegOpenKeyExA(HKEY_LOCAL_MACHINE,
+                      "HARDWARE\\DESCRIPTION\\System\\CentralProcessor\\0",
+                      0, KEY_READ, &key) == ERROR_SUCCESS) {
+        char name[256] = {};
+        DWORD name_size = sizeof(name);
+        if (RegQueryValueExA(key, "ProcessorNameString", nullptr, nullptr,
+                             (LPBYTE)name, &name_size) == ERROR_SUCCESS) {
+            info.model = name;
+            while (!info.model.empty() &&
+                   (info.model.back() == ' ' || info.model.back() == '\t'))
+                info.model.pop_back();
+        }
+        DWORD mhz = 0;
+        DWORD mhz_size = sizeof(mhz);
+        if (RegQueryValueExA(key, "~MHz", nullptr, nullptr,
+                             (LPBYTE)&mhz, &mhz_size) == ERROR_SUCCESS)
+            info.freq_mhz = static_cast<float>(mhz);
+        RegCloseKey(key);
+    }
+    if (info.model.empty()) info.model = "unknown";
     return info;
 }
 
 GpuInfo get_gpu_info() {
     GpuInfo info;
-    info.model = "unknown"; // Could use WMI or DXGI
+    const char* adapter_class =
+        "SYSTEM\\CurrentControlSet\\Control\\Class\\"
+        "{4d36e968-e325-11ce-bfc1-08002be10318}";
+    HKEY key;
+    if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, adapter_class, 0, KEY_READ, &key)
+        == ERROR_SUCCESS) {
+        DWORD idx = 0;
+        while (true) {
+            char subkey[64];
+            DWORD subkey_size = sizeof(subkey);
+            if (RegEnumKeyExA(key, idx++, subkey, &subkey_size,
+                              nullptr, nullptr, nullptr, nullptr)
+                != ERROR_SUCCESS)
+                break;
+
+            // Adapter keys are 4-digit numbers (0000, 0001, ...)
+            bool numeric = subkey[0] && subkey[1] && subkey[2] && subkey[3]
+                           && !subkey[4];
+            for (int i = 0; numeric && i < 4; i++)
+                if (subkey[i] < '0' || subkey[i] > '9') numeric = false;
+            if (!numeric) continue;
+
+            HKEY dev;
+            if (RegOpenKeyExA(key, subkey, 0, KEY_READ, &dev)
+                == ERROR_SUCCESS) {
+                char desc[256] = {};
+                DWORD desc_size = sizeof(desc);
+                if (RegQueryValueExA(dev, "DriverDesc", nullptr, nullptr,
+                                     (LPBYTE)desc, &desc_size) == ERROR_SUCCESS
+                    && desc[0]) {
+                    if (std::strstr(desc, "Microsoft Basic") == nullptr &&
+                        std::strstr(desc, "Microsoft Virtual") == nullptr) {
+                        info.model = desc;
+                        RegCloseKey(dev);
+                        break;
+                    }
+                }
+                RegCloseKey(dev);
+            }
+        }
+        RegCloseKey(key);
+    }
+    if (info.model.empty()) info.model = "unknown";
     return info;
 }
 
@@ -234,8 +344,30 @@ std::string get_terminal_info() {
 }
 
 std::string get_ip_address() {
-    // Stub - could use GetAdaptersInfo
-    return "unknown";
+    ULONG size = 0;
+    if (GetAdaptersInfo(nullptr, &size) != ERROR_BUFFER_OVERFLOW)
+        return "unknown";
+    PIP_ADAPTER_INFO adapters = (PIP_ADAPTER_INFO)std::malloc(size);
+    if (!adapters) return "unknown";
+
+    std::string result = "unknown";
+    std::string fallback;
+    if (GetAdaptersInfo(adapters, &size) == NO_ERROR) {
+        for (PIP_ADAPTER_INFO a = adapters; a; a = a->Next) {
+            if (a->Type == MIB_IF_TYPE_LOOPBACK) continue;
+            const char* ip = a->IpAddressList.IpAddress.String;
+            if (!ip[0] || std::strcmp(ip, "0.0.0.0") == 0) continue;
+            if (fallback.empty()) fallback = ip;
+            const char* gw = a->GatewayList.IpAddress.String;
+            if (gw[0] && std::strcmp(gw, "0.0.0.0") != 0) {
+                result = ip;
+                break;
+            }
+        }
+    }
+    std::free(adapters);
+    if (result == "unknown") result = fallback;
+    return result;
 }
 
 } // namespace rfxh::platform

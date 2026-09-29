@@ -29,7 +29,7 @@ static bool parse_os_release_val(const char* buf, int prefix_len, std::string& o
 }
 
 static bool detect_fastfetch(DistroInfo& info) {
-    FILE* fp = popen("fastfetch --json 2>/dev/null", "r");
+    FILE* fp = popen("fastfetch --json", "r");
     if (!fp) return false;
 
     char buf[1024];

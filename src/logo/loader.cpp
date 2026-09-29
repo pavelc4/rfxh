@@ -65,7 +65,7 @@ bool load_logo_file(Logo& logo) {
 static bool load_logo_ff_colored(Logo& logo, const char* name) {
     char cmd[256];
     std::snprintf(cmd, sizeof(cmd),
-                  "fastfetch -l %s -s break --pipe false 2>/dev/null", name);
+                  "fastfetch -l \"%s\" -s break --pipe false", name);
     FILE* fp = popen(cmd, "r");
     if (!fp) return false;
 
@@ -106,7 +106,7 @@ static bool load_logo_ff_colored(Logo& logo, const char* name) {
 }
 
 static bool load_logo_ff_plain(Logo& logo, const char* name) {
-    FILE* fp = popen("fastfetch --print-logos 2>/dev/null", "r");
+    FILE* fp = popen("fastfetch --print-logos", "r");
     if (!fp) return false;
 
     char buf[512];
