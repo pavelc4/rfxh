@@ -199,7 +199,7 @@ jobs:
           compression-level: 0
 
   notify:
-    if: ${{ !cancelled() && env.BOT_TOKEN != '' }}
+    if: ${{ !cancelled() && needs.setup.outputs.notify_message_id != '' }}
     needs: [setup, package]
     runs-on: ubuntu-latest
     steps:

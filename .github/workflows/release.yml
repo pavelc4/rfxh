@@ -229,7 +229,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   notify:
-    if: ${{ !cancelled() && env.BOT_TOKEN != '' }}
+    if: ${{ !cancelled() && needs.setup.outputs.notify_message_id != '' }}
     needs: [setup, release]
     runs-on: ubuntu-latest
     steps:
