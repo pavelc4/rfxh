@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 
-if(NOT CMAKE_TOOLCHAIN_FILE)
+# clang++ needs the MSVC env (INCLUDE/LIB) that only a dev shell provides, so
+# don't force it on Windows runners.
+if(NOT CMAKE_TOOLCHAIN_FILE AND NOT CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
     set(CMAKE_CXX_COMPILER "clang++")
 endif()
 
@@ -103,7 +105,10 @@ else()
 endif()
 
 target_include_directories(rfxh PRIVATE src)
-target_compile_options(rfxh PRIVATE -Wno-trigraphs)
+
+# MSVC: no <windows.h> bloat + don't let it define min/max macros over std::
+target_compile_definitions(rfxh PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX)
+target_compile_options(rfxh PRIVATE $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wno-trigraphs>)
 
 if(NOT WIN32)
     target_link_libraries(rfxh PRIVATE m)
