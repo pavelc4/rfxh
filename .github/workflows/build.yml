@@ -10,27 +10,21 @@ env:
   CARGO_TERM_COLOR: always
   BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
   CHAT_ID: ${{ secrets.CHAT_ID }}
+  # Single source for the build type, so the cmake flags and the Telegram
+  # caption can never disagree.
+  BUILD_TYPE: Release
 
 jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
       notify_message_id: ${{ steps.notify_start.outputs.message_id }}
-      has_token: ${{ steps.check_token.outputs.has_token }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Check BOT_TOKEN
-        id: check_token
-        run: |
-          if [ -n "${{ secrets.BOT_TOKEN }}" ]; then
-            echo "has_token=true" >> $GITHUB_OUTPUT
-          else
-            echo "has_token=false" >> $GITHUB_OUTPUT
-          fi
       - name: Notify Build Start
-        if: ${{ steps.check_token.outputs.has_token == 'true' }}
+        if: ${{ env.BOT_TOKEN != '' }}
         id: notify_start
         uses: ./.github/actions/telegram-notify
         with:
@@ -38,151 +32,209 @@ jobs:
           chat_id: ${{ secrets.CHAT_ID }}
           type: start
 
-  build:
+  build-linux:
+    name: linux-x86_64
     needs: setup
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            target: x86_64-linux
-            binary: rfxh
-            artifact: rfxh-linux-x86_64
-            strip: true
-          - os: macos-latest
-            target: x86_64-macos
-            binary: rfxh
-            artifact: rfxh-macos-x86_64
-            strip: true
-          - os: macos-latest
-            target: arm64-macos
-            binary: rfxh
-            artifact: rfxh-macos-arm64
-            strip: true
-            cmake_flags: -DCMAKE_SYSTEM_PROCESSOR=arm64
-          - os: ubuntu-latest
-            target: aarch64-android
-            binary: rfxh
-            artifact: rfxh-android-arm64
-            strip: true
-            ndk: true
-            ndk_abi: arm64-v8a
-          - os: ubuntu-latest
-            target: x86_64-android
-            binary: rfxh
-            artifact: rfxh-android-x86_64
-            strip: true
-            ndk: true
-            ndk_abi: x86_64
-
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Dependencies (Linux)
-        if: ${{ matrix.os == 'ubuntu-latest' && !matrix.ndk }}
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y clang cmake build-essential
-
-      - name: Install Dependencies (macOS)
-        if: ${{ startsWith(matrix.os, 'macos') }}
-        run: |
-          brew update
-          brew install cmake || true
-
-      - name: Setup Android NDK
-        if: ${{ matrix.ndk }}
-        uses: nttld/setup-ndk@v1
-        id: setup_ndk
-        with:
-          ndk-version: r27
-          add-to-path: true
-
-      - name: Configure CMake (native)
-        if: ${{ !matrix.ndk }}
-        run: |
-          cmake -B build \
-            -DCMAKE_BUILD_TYPE=Release \
-            ${{ matrix.cmake_flags }}
-
-      - name: Configure CMake (Android NDK)
-        if: ${{ matrix.ndk }}
-        run: |
-          cmake -B build \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_TOOLCHAIN_FILE="${{ steps.setup_ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake" \
-            -DANDROID_ABI=${{ matrix.ndk_abi }} \
-            -DANDROID_PLATFORM=android-24
-
-      - name: Build
-        run: cmake --build build --parallel
-
-      - name: Strip Binary (POSIX)
-        if: ${{ matrix.strip && runner.os != 'Windows' }}
-        run: |
-          if command -v llvm-strip &> /dev/null; then
-            llvm-strip --strip-all "build/${{ matrix.binary }}"
-          else
-            strip --strip-all "build/${{ matrix.binary }}" || true
-          fi
-
-      - name: Compute SHA256
-        run: |
-          if command -v sha256sum &> /dev/null; then
-            sha256sum "build/${{ matrix.binary }}" > "build/${{ matrix.binary }}.sha256"
-          else
-            shasum -a 256 "build/${{ matrix.binary }}" > "build/${{ matrix.binary }}.sha256"
-          fi
-
-      - name: Stage Artifacts
-        run: |
-          mkdir -p dist
-          cp "build/${{ matrix.binary }}" dist/
-          cp "build/${{ matrix.binary }}.sha256" dist/
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact }}
-          path: dist/
-
-  notify:
-    if: ${{ !cancelled() && needs.setup.outputs.has_token == 'true' }}
-    needs: [setup, build]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Download Linux Binary
-        if: ${{ needs.build.result == 'success' }}
-        uses: actions/download-artifact@v8
+      - uses: lukka/get-cmake@v2
+      - name: Configure
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Strip
+        run: llvm-strip --strip-all build/rfxh
+      - name: Checksum
+        run: node .github/scripts/checksum.js build/rfxh
+      - uses: actions/upload-artifact@v4
         with:
           name: rfxh-linux-x86_64
+          path: build/rfxh*
+
+  build-macos-x86_64:
+    name: macos-x86_64
+    needs: setup
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lukka/get-cmake@v2
+      - name: Configure
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_OSX_ARCHITECTURES=x86_64
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Strip
+        run: strip --strip-all build/rfxh
+      - name: Checksum
+        run: node .github/scripts/checksum.js build/rfxh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rfxh-macos-x86_64
+          path: build/rfxh*
+
+  build-macos-arm64:
+    name: macos-arm64
+    needs: setup
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lukka/get-cmake@v2
+      - name: Configure
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_OSX_ARCHITECTURES=arm64
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Strip
+        run: strip --strip-all build/rfxh
+      - name: Checksum
+        run: node .github/scripts/checksum.js build/rfxh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rfxh-macos-arm64
+          path: build/rfxh*
+
+  build-android-arm64:
+    name: android-arm64
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nttld/setup-ndk@v1
+        id: ndk
+        with:
+          ndk-version: r27
+          add-to-path: true
+      - uses: lukka/get-cmake@v2
+      - name: Configure
+        run: >
+          cmake -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+          -DCMAKE_TOOLCHAIN_FILE=${{ steps.ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake
+          -DANDROID_ABI=arm64-v8a
+          -DANDROID_PLATFORM=android-24
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Strip
+        run: ${{ steps.ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip --strip-all build/rfxh
+      - name: Checksum
+        run: node .github/scripts/checksum.js build/rfxh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rfxh-android-arm64
+          path: build/rfxh*
+
+  build-android-x86_64:
+    name: android-x86_64
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nttld/setup-ndk@v1
+        id: ndk
+        with:
+          ndk-version: r27
+          add-to-path: true
+      - uses: lukka/get-cmake@v2
+      - name: Configure
+        run: >
+          cmake -B build -G Ninja
+          -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+          -DCMAKE_TOOLCHAIN_FILE=${{ steps.ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake
+          -DANDROID_ABI=x86_64
+          -DANDROID_PLATFORM=android-24
+      - name: Build
+        run: cmake --build build --parallel
+      - name: Strip
+        run: ${{ steps.ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip --strip-all build/rfxh
+      - name: Checksum
+        run: node .github/scripts/checksum.js build/rfxh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rfxh-android-x86_64
+          path: build/rfxh*
+
+  build-windows:
+    name: windows-x86_64
+    needs: setup
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1
+      - uses: lukka/get-cmake@v2
+      - name: Configure
+        shell: bash
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
+      - name: Build
+        shell: bash
+        run: cmake --build build --parallel
+      - name: Checksum
+        run: node .github/scripts/checksum.js build/rfxh.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rfxh-windows-x86_64
+          path: |
+            build/rfxh.exe
+            build/rfxh.exe.sha256
+
+  package:
+    name: pack
+    needs:
+      - build-linux
+      - build-macos-x86_64
+      - build-macos-arm64
+      - build-android-arm64
+      - build-android-x86_64
+      - build-windows
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
           path: artifacts/
+      - name: Gzip Binaries
+        run: node .github/scripts/gzip.js artifacts pack
+      - uses: actions/upload-artifact@v4
+        with:
+          name: telegram-pack
+          path: pack/
+          compression-level: 0
 
-      - name: Prepare Binary for Telegram
-        if: ${{ needs.build.result == 'success' }}
-        run: |
-          cd artifacts
-          gzip -c rfxh > rfxh.gz
-          echo "binary_path=$(pwd)/rfxh.gz" >> $GITHUB_ENV
-
+  notify:
+    if: ${{ !cancelled() && env.BOT_TOKEN != '' }}
+    needs: [setup, package]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Pack
+        if: ${{ needs.package.result == 'success' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: telegram-pack
+          path: pack/
+      - name: Collect Binaries
+        id: files
+        if: ${{ needs.package.result == 'success' }}
+        run: node .github/scripts/collect-binaries.js pack
+      - name: Build Caption
+        id: caption
+        uses: actions/github-script@v7
+        with:
+          script: require(process.env.GITHUB_WORKSPACE + '/.github/actions/telegram-notify/lib/caption.js')(github, context, core)
       - name: Notify Success
-        if: ${{ needs.build.result == 'success' && needs.setup.outputs.notify_message_id != '' }}
+        if: ${{ needs.package.result == 'success' && needs.setup.outputs.notify_message_id != '' }}
         uses: ./.github/actions/telegram-notify
         with:
           bot_token: ${{ secrets.BOT_TOKEN }}
           chat_id: ${{ secrets.CHAT_ID }}
           type: complete
-          binary_file: ${{ env.binary_path }}
-          delete_message_id: ${{ needs.setup.outputs.notify_message_id }}
-
+          binary_files: ${{ steps.files.outputs.files }}
+          edit_message_id: ${{ needs.setup.outputs.notify_message_id }}
+          caption: ${{ steps.caption.outputs.caption }}
       - name: Notify Failure
-        if: ${{ needs.build.result != 'success' && needs.setup.outputs.notify_message_id != '' }}
+        if: ${{ needs.package.result != 'success' && needs.setup.outputs.notify_message_id != '' }}
         uses: ./.github/actions/telegram-notify
         with:
           bot_token: ${{ secrets.BOT_TOKEN }}
           chat_id: ${{ secrets.CHAT_ID }}
           type: failure
-          delete_message_id: ${{ needs.setup.outputs.notify_message_id }}
+          edit_message_id: ${{ needs.setup.outputs.notify_message_id }}
+          caption: ${{ steps.caption.outputs.caption }}
