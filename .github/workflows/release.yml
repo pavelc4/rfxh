@@ -58,7 +58,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: lukka/get-cmake@v2
       - name: Configure
         run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
       - name: Build
@@ -78,7 +77,6 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: lukka/get-cmake@v2
       - name: Configure
         run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_OSX_ARCHITECTURES=x86_64
       - name: Build
@@ -98,7 +96,6 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: lukka/get-cmake@v2
       - name: Configure
         run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_OSX_ARCHITECTURES=arm64
       - name: Build
@@ -123,7 +120,6 @@ jobs:
         with:
           ndk-version: r27
           add-to-path: true
-      - uses: lukka/get-cmake@v2
       - name: Configure
         run: >
           cmake -B build -G Ninja
@@ -153,7 +149,6 @@ jobs:
         with:
           ndk-version: r27
           add-to-path: true
-      - uses: lukka/get-cmake@v2
       - name: Configure
         run: >
           cmake -B build -G Ninja
@@ -179,7 +174,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ilammy/msvc-dev-cmd@v1
-      - uses: lukka/get-cmake@v2
       - name: Configure
         shell: bash
         run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }}
