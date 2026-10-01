@@ -44,4 +44,8 @@ int case_insensitive_cmp(const char* a, const char* b) {
     return strcasecmp(a, b);
 }
 
+int case_insensitive_ncmp(const char* a, const char* b, size_t n) {
+    return strncasecmp(a, b, n);
+}
+
 } // namespace rfxh::platform

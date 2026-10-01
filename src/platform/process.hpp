@@ -19,4 +19,9 @@ std::string run_command(const char* cmd);
 // On Windows: uses _stricmp
 int case_insensitive_cmp(const char* a, const char* b);
 
+// Portable strncasecmp wrapper
+// On POSIX: uses strncasecmp
+// On Windows: uses _strnicmp
+int case_insensitive_ncmp(const char* a, const char* b, size_t n);
+
 } // namespace rfxh::platform

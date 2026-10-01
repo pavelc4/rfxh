@@ -2,7 +2,11 @@
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
+
+#ifndef _WIN32
+// getlogin/gethostname, only used by gather_title below. MSVC has no unistd.h.
 #include <unistd.h>
+#endif
 
 namespace rfxh::gather {
 

@@ -38,6 +38,10 @@ int case_insensitive_cmp(const char* a, const char* b) {
     return _stricmp(a, b);
 }
 
+int case_insensitive_ncmp(const char* a, const char* b, size_t n) {
+    return _strnicmp(a, b, n);
+}
+
 } // namespace rfxh::platform
 
 #endif // _WIN32
