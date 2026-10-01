@@ -1,4 +1,5 @@
 #include "logo/detect.hpp"
+#include "platform/process.hpp"
 #include <cstdio>
 #include <cstring>
 
@@ -29,7 +30,7 @@ static bool parse_os_release_val(const char* buf, int prefix_len, std::string& o
 }
 
 static bool detect_fastfetch(DistroInfo& info) {
-    FILE* fp = popen("fastfetch --json", "r");
+    FILE* fp = rfxh::platform::pipe_open("fastfetch --json", "r");
     if (!fp) return false;
 
     char buf[1024];
@@ -65,7 +66,7 @@ static bool detect_fastfetch(DistroInfo& info) {
                                     }
                                 }
                             }
-                            pclose(fp);
+                            rfxh::platform::pipe_close(fp);
                             return true;
                         }
                     }
@@ -73,7 +74,7 @@ static bool detect_fastfetch(DistroInfo& info) {
             }
         }
     }
-    pclose(fp);
+    rfxh::platform::pipe_close(fp);
     return false;
 }
 

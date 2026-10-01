@@ -43,7 +43,7 @@ jobs:
       - name: Build
         run: cmake --build build --parallel
       - name: Strip
-        run: llvm-strip --strip-all build/rfxh
+        run: strip --strip-all build/rfxh
       - name: Checksum
         run: node .github/scripts/checksum.js build/rfxh
       - uses: actions/upload-artifact@v4
@@ -62,7 +62,7 @@ jobs:
       - name: Build
         run: cmake --build build --parallel
       - name: Strip
-        run: strip --strip-all build/rfxh
+        run: strip -x build/rfxh
       - name: Checksum
         run: node .github/scripts/checksum.js build/rfxh
       - uses: actions/upload-artifact@v4
@@ -81,7 +81,7 @@ jobs:
       - name: Build
         run: cmake --build build --parallel
       - name: Strip
-        run: strip --strip-all build/rfxh
+        run: strip -x build/rfxh
       - name: Checksum
         run: node .github/scripts/checksum.js build/rfxh
       - uses: actions/upload-artifact@v4
