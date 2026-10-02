@@ -201,7 +201,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: artifacts/
       - name: Stage Release Assets
@@ -231,7 +231,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Download Pack
         if: ${{ needs.release.result == 'success' }}
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: telegram-pack
           path: pack/
