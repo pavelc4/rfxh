@@ -11,11 +11,11 @@
 
 namespace rfxh::render {
 
-void RenderEngine::clear_buf(int render_height) {
-    int n = render_height * kFrameWidth;
-    std::memset(shade_idx.data(), -1, n);
-    std::memset(zbuf.data(), 0, n * sizeof(float));
-    std::memset(colorbuf.data(), 0, n * sizeof(int));
+void RenderEngine::clear_buf() {
+    shade_idx.fill({});
+    for (auto& row : shade_idx) row.fill(-1);
+    for (auto& row : zbuf) row.fill(0.0f);
+    for (auto& row : colorbuf) row.fill(0);
 }
 
 void RenderEngine::build_points(const logo::Logo& logo, float size_scale) {

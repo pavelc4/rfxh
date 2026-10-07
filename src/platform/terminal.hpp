@@ -35,4 +35,7 @@ void sleep_ms(int ms);
 // Check if terminal was resized (consumes flag)
 bool consume_resize();
 
+// Poll mouse drag deltas since last call (cells). Returns true if moved w/ button held.
+bool poll_mouse_drag(int& dx, int& dy);
+
 } // namespace rfxh::platform

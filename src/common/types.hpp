@@ -12,7 +12,7 @@ inline constexpr int kMaxShading  = 64;
 
 // Render limits
 inline constexpr int kFrameWidth  = 80;
-inline constexpr int kFrameHeight = 60;
+inline constexpr int kFrameHeight = 200;
 inline constexpr int kMaxPoints   = 80000;
 inline constexpr int kGap         = 2;
 inline constexpr float kK2        = 120.0f;

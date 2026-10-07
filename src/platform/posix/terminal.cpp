@@ -22,6 +22,7 @@ void restore_termios() {
 }
 
 void handle_signal(int) {
+    std::printf("\033[?1006l\033[?1002l\033[?1000l");
     restore_termios();
     std::printf("\033[?25h");
     std::fflush(stdout);
@@ -54,10 +55,16 @@ bool terminal_init() {
     std::signal(SIGTERM, handle_signal);
     std::signal(SIGWINCH, handle_winch);
 
+    // SGR mouse: press + button-drag, extended coords
+    std::printf("\033[?1000h\033[?1002h\033[?1006h");
+    std::fflush(stdout);
+
     return true;
 }
 
 void terminal_restore() {
+    std::printf("\033[?1006l\033[?1002l\033[?1000l");
+    std::fflush(stdout);
     restore_termios();
 }
 
@@ -92,16 +99,13 @@ int terminal_cols() {
 
 bool keypress_available() {
     struct pollfd pfd = {STDIN_FILENO, POLLIN, 0};
-    int pret = poll(&pfd, 1, 0);
-    if (pret > 0 && (pfd.revents & POLLIN)) {
-        char c;
-        if (read(STDIN_FILENO, &c, 1) == 1)
-            return true;
-    }
-    return false;
+    return poll(&pfd, 1, 0) > 0 && (pfd.revents & POLLIN);
 }
 
 int keypress_read() {
+    struct pollfd pfd = {STDIN_FILENO, POLLIN, 0};
+    if (poll(&pfd, 1, 0) <= 0 || !(pfd.revents & POLLIN))
+        return 0;
     char c;
     if (read(STDIN_FILENO, &c, 1) == 1)
         return static_cast<unsigned char>(c);
@@ -117,6 +121,12 @@ bool consume_resize() {
         g_term_resized = 0;
         return true;
     }
+    return false;
+}
+
+bool poll_mouse_drag(int& dx, int& dy) {
+    // POSIX mouse arrives as SGR escape bytes, parsed in App. No console-API drag.
+    dx = dy = 0;
     return false;
 }
 

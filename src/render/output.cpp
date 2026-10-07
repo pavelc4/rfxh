@@ -11,11 +11,16 @@
 
 namespace rfxh::render {
 
-void render_frame(const RenderEngine& eng, int render_height,
+void render_frame(const RenderEngine& eng, int render_height, int render_width,
                   const gather::FetchLines& fetch_lines, int fetch_line_count,
                   int fetch_start, const logo::Logo& logo,
                   const std::string& color_inner, const std::string& color_outer,
                   bool use_color) {
+
+    if (render_width < 1) render_width = 1;
+    if (render_width > kFrameWidth) render_width = kFrameWidth;
+    if (render_height < 1) render_height = 1;
+    if (render_height > kFrameHeight) render_height = kFrameHeight;
 
     std::string buf;
     buf.reserve(render_height * 2048 + 64);
@@ -31,7 +36,7 @@ void render_frame(const RenderEngine& eng, int render_height,
 
     for (int i = 0; i < render_height; i++) {
         if (!use_color) {
-            for (int j = 0; j < kFrameWidth; j++) {
+            for (int j = 0; j < render_width; j++) {
                 int ci = eng.shade_idx[i][j];
                 if (ci < 0) {
                     buf += ' ';
@@ -43,7 +48,7 @@ void render_frame(const RenderEngine& eng, int render_height,
             }
         } else {
             int prev_color = -1;
-            for (int j = 0; j < kFrameWidth; j++) {
+            for (int j = 0; j < render_width; j++) {
                 int ci = eng.shade_idx[i][j];
                 if (ci < 0) {
                     if (prev_color != -1) {

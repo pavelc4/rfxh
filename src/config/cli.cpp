@@ -20,7 +20,12 @@ static void print_help() {
         "  --frames <n>              Stop after n frames (default 2000)\n"
         "  --infinite                Run forever\n"
         "  --shading-chars <str>     Custom shading ramp (UTF-8)\n"
-        "  -h, --help                Show this help\n");
+        "  -h, --help                Show this help\n\n"
+        "Controls (while running):\n"
+        "  drag mouse / arrows / WASD  rotate logo\n"
+        "  space                       pause auto-rotation\n"
+        "  r                           reset rotation\n"
+        "  q / ESC                     quit\n");
 }
 
 CliOptions parse_cli(int argc, char** argv) {

@@ -11,6 +11,40 @@ namespace {
 HANDLE g_hConsole = nullptr;
 DWORD g_orig_mode = 0;
 bool g_initialized = false;
+int g_last_rows = 0;
+int g_last_cols = 0;
+int g_drag_dx = 0;
+int g_drag_dy = 0;
+int g_last_mx = -1;
+int g_last_my = -1;
+bool g_mdown = false;
+
+void drain_console(bool& key_down) {
+    HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
+    INPUT_RECORD record;
+    DWORD events = 0;
+    while (PeekConsoleInput(hInput, &record, 1, &events) && events > 0) {
+        if (record.EventType == KEY_EVENT && record.Event.KeyEvent.bKeyDown) {
+            key_down = true;
+            return; // leave key in queue for keypress_read
+        }
+        ReadConsoleInput(hInput, &record, 1, &events); // consume non-key
+        if (record.EventType == MOUSE_EVENT) {
+            const auto& m = record.Event.MouseEvent;
+            int mx = static_cast<int>(m.dwMousePosition.X);
+            int my = static_cast<int>(m.dwMousePosition.Y);
+            bool down = (m.dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) != 0;
+            if (down && g_mdown && g_last_mx >= 0) {
+                g_drag_dx += mx - g_last_mx;
+                g_drag_dy += my - g_last_my;
+            }
+            g_mdown = down;
+            g_last_mx = mx;
+            g_last_my = my;
+        }
+        // WINDOW_BUFFER_SIZE_EVENT handled via size poll in consume_resize
+    }
+}
 
 } // anonymous namespace
 
@@ -30,13 +64,16 @@ bool terminal_init() {
     mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
     SetConsoleMode(g_hConsole, mode);
 
-    // Set input to raw mode (no echo, no line buffering)
+    // Set input to raw mode (no echo, no line buffering) + mouse/window events
     DWORD input_mode = 0;
     GetConsoleMode(hInput, &input_mode);
     input_mode &= ~(ENABLE_ECHO_INPUT | ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT);
+    input_mode |= ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT;
     SetConsoleMode(hInput, input_mode);
 
     g_initialized = true;
+    g_last_rows = terminal_rows();
+    g_last_cols = terminal_cols();
     return true;
 }
 
@@ -83,16 +120,9 @@ int terminal_cols() {
 }
 
 bool keypress_available() {
-    HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
-    INPUT_RECORD record;
-    DWORD events = 0;
-    while (PeekConsoleInput(hInput, &record, 1, &events) && events > 0) {
-        if (record.EventType == KEY_EVENT && record.Event.KeyEvent.bKeyDown) {
-            return true;
-        }
-        ReadConsoleInput(hInput, &record, 1, &events);
-    }
-    return false;
+    bool key_down = false;
+    drain_console(key_down);
+    return key_down;
 }
 
 int keypress_read() {
@@ -112,9 +142,26 @@ void sleep_ms(int ms) {
 }
 
 bool consume_resize() {
-    // Windows console resize doesn't send signals like SIGWINCH
-    // Could poll terminal size changes but skip for now
+    int r = terminal_rows();
+    int c = terminal_cols();
+    // drain any queued window/mouse events so the queue can't grow
+    bool dummy = false;
+    drain_console(dummy);
+    if ((r > 0 && r != g_last_rows) || (c > 0 && c != g_last_cols)) {
+        g_last_rows = r;
+        g_last_cols = c;
+        return true;
+    }
     return false;
+}
+
+bool poll_mouse_drag(int& dx, int& dy) {
+    bool dummy = false;
+    drain_console(dummy);
+    dx = g_drag_dx;
+    dy = g_drag_dy;
+    g_drag_dx = g_drag_dy = 0;
+    return dx != 0 || dy != 0;
 }
 
 } // namespace rfxh::platform

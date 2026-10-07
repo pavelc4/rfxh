@@ -36,12 +36,20 @@ private:
     float B_ = 0.0f;
     float K1_ = 0.0f;
     int render_height_ = 0;
+    int render_width_ = 80;
     int fetch_start_ = 0;
+    bool paused_ = false;
+    bool dragging_ = false;
+    int last_mx_ = 0;
+    int last_my_ = 0;
 
     // Helpers
     void load_logo(const config::CliOptions& opts);
     void gather_info(const config::CliOptions& opts);
     void setup_render(const config::CliOptions& opts);
+    void compute_sizes(const config::CliOptions& opts);
+    // Returns true if user asked to quit
+    bool handle_input(const config::CliOptions& opts);
     void animation_loop(const config::CliOptions& opts);
 };
 

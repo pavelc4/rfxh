@@ -11,9 +11,13 @@ namespace rfxh::render {
 
 void rasterize_frame(RenderEngine& eng, const logo::Logo& logo,
                      float& A, float& B, float speed, bool rotate_x, bool rotate_y,
-                     const config::Config& cfg, int render_height) {
+                     const config::Config& cfg, int render_height, int render_width) {
 
-    eng.clear_buf(render_height);
+    eng.clear_buf();
+    if (render_width < 1) render_width = 1;
+    if (render_width > kFrameWidth) render_width = kFrameWidth;
+    if (render_height < 1) render_height = 1;
+    if (render_height > kFrameHeight) render_height = kFrameHeight;
 
     A += rotate_x ? 0.04f * speed : 0.0f;
     B += rotate_y ? 0.06f * speed : 0.0f;
@@ -27,11 +31,11 @@ void rasterize_frame(RenderEngine& eng, const logo::Logo& logo,
     const float hl0 = std::sqrt(hx0 * hx0 + hy0 * hy0 + hz0 * hz0);
     const float hlx = hx0 / hl0, hly = hy0 / hl0, hlz = hz0 / hl0;
 
-    const float K1 = 37.0f * render_height / 36.0f;
+    const float K1 = 37.0f * render_height / 36.0f * (render_width / 80.0f < 1.0f ? render_width / 80.0f : 1.0f);
     const float K2 = 5.5f;
     const float k1x2 = K1 * 2.0f;
-    const float half_aw = static_cast<float>(kFrameWidth) * 0.5f;
-    const int aw = kFrameWidth;
+    const float half_aw = static_cast<float>(render_width) * 0.5f;
+    const int aw = render_width;
     const int smax = text::shading_count() - 1;
 
     const float y_center = render_height * 0.5f;

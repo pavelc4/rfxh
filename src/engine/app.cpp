@@ -5,11 +5,28 @@
 #include "render/constants.hpp"
 #include "terminal/terminal.hpp"
 #include "text/shading.hpp"
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <string>
 
 namespace rfxh::engine {
+
+// Visible width of a fetch line (strip ANSI CSI ... letter)
+static int visible_len(const char* s) {
+    int n = 0;
+    for (const char* p = s; *p; p++) {
+        if (*p == '\033' && *(p + 1) == '[') {
+            p += 2;
+            while (*p && (*p < '@' || *p > '~')) p++;
+            if (!*p) break;
+        } else {
+            n++;
+        }
+    }
+    return n;
+}
 
 using gather_fn = void (*)(gather::GatherContext&);
 
@@ -159,8 +176,8 @@ void App::gather_info(const config::CliOptions& opts) {
     cfg_.current_field = -1;
 }
 
-void App::setup_render(const config::CliOptions& opts) {
-    // Render height
+void App::compute_sizes(const config::CliOptions& opts) {
+    // Height (as before)
     if (cfg_.config_height > 0) {
         render_height_ = cfg_.config_height;
     } else if (opts.show_info && fetch_line_count_ > 0) {
@@ -169,20 +186,137 @@ void App::setup_render(const config::CliOptions& opts) {
     } else {
         render_height_ = 36;
     }
-
-    // Apply size scale
     render_height_ = static_cast<int>(render_height_ * opts.size_scale);
     if (render_height_ < 20) render_height_ = 20;
     if (render_height_ > render::kFrameHeight) render_height_ = render::kFrameHeight;
-
-    // Cap to terminal height
-    int term_rows = terminal::get_term_rows();
+    int term_rows = platform::terminal_rows();
+    if (term_rows <= 0) term_rows = terminal::get_term_rows();
     if (term_rows > 1) term_rows--;
     if (term_rows > 0 && render_height_ > term_rows)
         render_height_ = term_rows;
 
+    // Width: fit logo + info side-by-side, else shrink logo, else drop info
+    render_width_ = render::kFrameWidth;
+    int term_cols = platform::terminal_cols();
+    if (term_cols > 0) {
+        if (!opts.show_info) {
+            render_width_ = std::min(render::kFrameWidth, term_cols - 1);
+        } else {
+            int info_w = 0;
+            for (int i = 0; i < fetch_line_count_; i++)
+                info_w = std::max(info_w, visible_len(fetch_lines_[i].data()));
+            int avail = term_cols - info_w - render::kGap - 1;
+            if (avail >= render::kFrameWidth) {
+                render_width_ = render::kFrameWidth;
+            } else if (avail >= 20) {
+                render_width_ = avail;
+            } else {
+                // ponytail: too narrow -> logo only, info would wrap
+                render_width_ = std::min(render::kFrameWidth, term_cols - 1);
+            }
+        }
+        if (render_width_ < 10) render_width_ = 10;
+        if (render_width_ > render::kFrameWidth) render_width_ = render::kFrameWidth;
+    }
+
     K1_ = 37.0f * render_height_ / 36.0f;
     fetch_start_ = opts.show_info ? 1 : 0;
+}
+
+void App::setup_render(const config::CliOptions& opts) {
+    compute_sizes(opts);
+}
+
+// Flat key → action table. Returns: 1 quit, 2 space, 3 reset, 0 handled-as-rotate/none.
+static int plain_key(unsigned char c, float& dA, float& dB) {
+    switch (c | 0x20) { // fold upper→lower, non-letters unaffected for our cases
+        case 'q': return 1;
+        case ' ': return 2;
+        case 'r': return 3;
+        case 'w': case 'k': dA -= 0.12f; return 0;
+        case 's': case 'j': dA += 0.12f; return 0;
+        case 'a': case 'h': dB -= 0.12f; return 0;
+        case 'd': case 'l': dB += 0.12f; return 0;
+        default: return 0;
+    }
+}
+
+static bool arrow_key(char f, float& dA, float& dB) {
+    switch (f) {
+        case 'A': dA -= 0.15f; return true;
+        case 'B': dA += 0.15f; return true;
+        case 'C': dB += 0.15f; return true;
+        case 'D': dB -= 0.15f; return true;
+        default: return false;
+    }
+}
+
+// End index of SGR mouse seq starting at '<' (i points at ESC), -1 if incomplete.
+static int sgr_end(const char* b, int n, int i) {
+    if (i + 3 >= n || b[i + 1] != '[' || b[i + 2] != '<') return -2; // not SGR
+    int j = i + 3;
+    while (j < n && b[j] != 'M' && b[j] != 'm') j++;
+    return j >= n ? -1 : j;
+}
+
+// Drain pending input, apply drag/arrows. True = quit.
+bool App::handle_input(const config::CliOptions& opts) {
+    (void)opts;
+    int mdx = 0, mdy = 0;
+    if (platform::poll_mouse_drag(mdx, mdy)) {
+        B_ += mdx * 0.08f;
+        A_ += mdy * 0.08f;
+    }
+
+    char buf[256];
+    int n = 0;
+    while (platform::keypress_available() && n < 255) {
+        int c = platform::keypress_read();
+        if (c <= 0) break;
+        buf[n++] = static_cast<char>(c);
+    }
+    if (n == 0) return false;
+
+    float dA = 0, dB = 0;
+    int spaces = 0;
+    bool reset = false, quit = false;
+
+    for (int i = 0; i < n && !quit; i++) {
+        unsigned char c = buf[i];
+        if (c == 0x03) { quit = true; continue; } // Ctrl-C
+        if (c != 0x1b) {
+            int act = plain_key(c, dA, dB);
+            quit = act == 1;
+            spaces += act == 2;
+            reset = reset || act == 3;
+            continue;
+        }
+        if (i + 1 >= n) { quit = true; continue; } // lone ESC
+        if (buf[i + 1] == 'O' && i + 2 < n) { arrow_key(buf[i + 2], dA, dB); i += 2; continue; }
+        if (buf[i + 1] != '[') { i++; continue; }
+        int j = sgr_end(buf, n, i);
+        if (j == -2) { // plain CSI, skip params
+            j = i + 2;
+            while (j < n && (buf[j] == ';' || (buf[j] >= '0' && buf[j] <= '9'))) j++;
+            if (j < n) arrow_key(buf[j], dA, dB);
+            i = j;
+            continue;
+        }
+        if (j < 0) break; // incomplete SGR, drop
+        int btn = -1, x = -1, y = -1;
+        std::sscanf(buf + i + 3, "%d;%d;%d", &btn, &x, &y);
+        if (buf[j] == 'm') dragging_ = false;
+        else if (btn != 64 && btn != 65 && x > 0 && y > 0) {
+            if (!dragging_) { dragging_ = true; last_mx_ = x; last_my_ = y; }
+            else { dB += (x - last_mx_) * 0.08f; dA += (y - last_my_) * 0.08f; last_mx_ = x; last_my_ = y; }
+        }
+        i = j;
+    }
+    A_ += dA;
+    B_ += dB;
+    if (reset) { A_ = B_ = 0.0f; }
+    if (spaces % 2 == 1) paused_ = !paused_;
+    return quit;
 }
 
 void App::animation_loop(const config::CliOptions& opts) {
@@ -192,22 +326,27 @@ void App::animation_loop(const config::CliOptions& opts) {
     platform::cursor_hide();
     platform::screen_clear();
 
+    int last_rows = platform::terminal_rows();
+    int last_cols = platform::terminal_cols();
+
     for (int frame = 0; opts.max_frames == 0 || frame < opts.max_frames; frame++) {
-        // Check for keypress
-        if (platform::keypress_available())
+        if (handle_input(opts))
             break;
 
-        // Handle terminal resize
-        if (platform::consume_resize()) {
-            int new_rows = platform::terminal_rows();
-            if (new_rows > 1) new_rows--;
-            if (new_rows > 0 && new_rows != render_height_) {
-                render_height_ = new_rows;
-                if (render_height_ > render::kFrameHeight)
-                    render_height_ = render::kFrameHeight;
-                K1_ = 37.0f * render_height_ / 36.0f;
+        // Resize: signal (POSIX) or polled size change (Win32 + fallback)
+        bool resized = platform::consume_resize();
+        int cur_rows = platform::terminal_rows();
+        int cur_cols = platform::terminal_cols();
+        if (!resized && ((cur_rows > 0 && cur_rows != last_rows) ||
+                         (cur_cols > 0 && cur_cols != last_cols)))
+            resized = true;
+        if (resized) {
+            int h_before = render_height_, w_before = render_width_;
+            compute_sizes(opts);
+            last_rows = cur_rows;
+            last_cols = cur_cols;
+            if (render_height_ != h_before || render_width_ != w_before)
                 platform::screen_clear();
-            }
         }
 
         // Refresh dynamic fields every 20 frames
@@ -232,12 +371,26 @@ void App::animation_loop(const config::CliOptions& opts) {
             cfg_.is_refresh_pass = false;
         }
 
-        // Rasterize frame
-        render::rasterize_frame(render_, logo_, A_, B_, opts.speed, opts.rotate_x, opts.rotate_y,
-                                cfg_, render_height_);
+        // Rasterize frame (paused = freeze auto-rotation, drag/keys still work)
+        float eff_speed = paused_ ? 0.0f : opts.speed;
+        bool eff_rx = paused_ ? false : opts.rotate_x;
+        bool eff_ry = paused_ ? false : opts.rotate_y;
+        render::rasterize_frame(render_, logo_, A_, B_, eff_speed, eff_rx, eff_ry,
+                                cfg_, render_height_, render_width_);
+
+        // Hide info if it no longer fits (avoid line-wrap breaking the anim)
+        int info_count = fetch_line_count_;
+        if (opts.show_info && info_count > 0) {
+            int info_w = 0;
+            for (int i = 0; i < fetch_line_count_; i++)
+                info_w = std::max(info_w, visible_len(fetch_lines_[i].data()));
+            int cols = platform::terminal_cols();
+            if (cols > 0 && render_width_ + render::kGap + info_w + 1 > cols)
+                info_count = 0;
+        }
 
         // Render to stdout
-        render::render_frame(render_, render_height_, fetch_lines_, fetch_line_count_,
+        render::render_frame(render_, render_height_, render_width_, fetch_lines_, info_count,
                              fetch_start_, logo_, color_inner_, color_outer_, opts.use_color);
 
         platform::sleep_ms(50);
