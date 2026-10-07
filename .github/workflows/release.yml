@@ -241,7 +241,7 @@ jobs:
         run: node .github/scripts/collect-binaries.js pack
       - name: Build Caption
         id: caption
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         env:
           RELEASE_TAG: ${{ needs.setup.outputs.release_tag }}
         with:
