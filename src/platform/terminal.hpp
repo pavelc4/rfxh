@@ -38,4 +38,7 @@ bool consume_resize();
 // Poll mouse drag deltas since last call (cells). Returns true if moved w/ button held.
 bool poll_mouse_drag(int& dx, int& dy);
 
+// Poll mouse wheel ticks since last call (positive = up). Clears on read.
+int poll_mouse_wheel();
+
 } // namespace rfxh::platform

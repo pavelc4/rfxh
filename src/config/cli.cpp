@@ -20,9 +20,12 @@ static void print_help() {
         "  --frames <n>              Stop after n frames (default 2000)\n"
         "  --infinite                Run forever\n"
         "  --shading-chars <str>     Custom shading ramp (UTF-8)\n"
+        "  --fps                     Show FPS counter\n"
+        "  --unlimited               No frame cap (render as fast as possible)\n"
         "  -h, --help                Show this help\n\n"
         "Controls (while running):\n"
         "  drag mouse / arrows / WASD  rotate logo\n"
+        "  wheel / +/-                 zoom\n"
         "  space                       pause auto-rotation\n"
         "  r                           reset rotation\n"
         "  q / ESC                     quit\n");
@@ -62,6 +65,10 @@ CliOptions parse_cli(int argc, char** argv) {
         } else if (std::strcmp(argv[i], "--infinite") == 0) {
             opts.infinite = true;
             opts.max_frames = 0;
+        } else if (std::strcmp(argv[i], "--fps") == 0) {
+            opts.show_fps = true;
+        } else if (std::strcmp(argv[i], "--unlimited") == 0) {
+            opts.unlimited = true;
         } else if (std::strcmp(argv[i], "--shading-chars") == 0 && i + 1 < argc) {
             opts.shading_chars = argv[++i];
         }

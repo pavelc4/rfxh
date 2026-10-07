@@ -43,6 +43,7 @@ private:
     int last_mx_ = 0;
     int last_my_ = 0;
     int idle_frames_ = 999; // frames since last manual input
+    float zoom_ = 1.0f;
 
     // Helpers
     void load_logo(const config::CliOptions& opts);

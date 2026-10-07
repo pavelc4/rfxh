@@ -6,6 +6,7 @@
 #include "terminal/terminal.hpp"
 #include "text/shading.hpp"
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -237,6 +238,8 @@ static int plain_key(unsigned char c, float& dA, float& dB) {
         case 's': case 'j': dA += 0.12f; return 0;
         case 'a': case 'h': dB -= 0.12f; return 0;
         case 'd': case 'l': dB += 0.12f; return 0;
+        case '+': case '=': return 4; // zoom in
+        case '-': return 5;           // zoom out
         default: return 0;
     }
 }
@@ -267,6 +270,11 @@ bool App::handle_input(const config::CliOptions& opts) {
         B_ += mdx * 0.08f;
         A_ += mdy * 0.08f;
     }
+    if (int w = platform::poll_mouse_wheel()) {
+        while (w > 0) { zoom_ = std::min(zoom_ * 1.08f, 3.0f); w--; }
+        while (w < 0) { zoom_ = std::max(zoom_ / 1.08f, 0.4f); w++; }
+        idle_frames_ = 0;
+    }
 
     char buf[256];
     int n = 0;
@@ -289,6 +297,8 @@ bool App::handle_input(const config::CliOptions& opts) {
             quit = act == 1;
             spaces += act == 2;
             reset = reset || act == 3;
+            if (act == 4) { zoom_ = std::min(zoom_ * 1.1f, 3.0f); idle_frames_ = 0; }
+            if (act == 5) { zoom_ = std::max(zoom_ / 1.1f, 0.4f); idle_frames_ = 0; }
             continue;
         }
         if (i + 1 >= n) { quit = true; continue; } // lone ESC
@@ -306,7 +316,9 @@ bool App::handle_input(const config::CliOptions& opts) {
         int btn = -1, x = -1, y = -1;
         std::sscanf(buf + i + 3, "%d;%d;%d", &btn, &x, &y);
         if (buf[j] == 'm') dragging_ = false;
-        else if (btn != 64 && btn != 65 && x > 0 && y > 0) {
+        else if (btn == 64) { zoom_ = std::min(zoom_ * 1.08f, 3.0f); idle_frames_ = 0; }
+        else if (btn == 65) { zoom_ = std::max(zoom_ / 1.08f, 0.4f); idle_frames_ = 0; }
+        else if (x > 0 && y > 0) {
             if (!dragging_) { dragging_ = true; last_mx_ = x; last_my_ = y; }
             else { dB += (x - last_mx_) * 0.08f; dA += (y - last_my_) * 0.08f; last_mx_ = x; last_my_ = y; }
         }
@@ -315,7 +327,7 @@ bool App::handle_input(const config::CliOptions& opts) {
     A_ += dA;
     B_ += dB;
     if (dA != 0.0f || dB != 0.0f || dragging_) idle_frames_ = 0; // manual input: freeze auto-rotate
-    if (reset) { A_ = B_ = 0.0f; }
+    if (reset) { A_ = B_ = 0.0f; zoom_ = 1.0f; }
     if (spaces % 2 == 1) paused_ = !paused_;
     return quit;
 }
@@ -329,6 +341,8 @@ void App::animation_loop(const config::CliOptions& opts) {
 
     int last_rows = platform::terminal_rows();
     int last_cols = platform::terminal_cols();
+    auto last_t = std::chrono::steady_clock::now();
+    float fps = 0.0f;
 
     for (int frame = 0; opts.max_frames == 0 || frame < opts.max_frames; frame++) {
         if (handle_input(opts))
@@ -380,7 +394,7 @@ void App::animation_loop(const config::CliOptions& opts) {
         bool eff_rx = auto_on && opts.rotate_x;
         bool eff_ry = auto_on && opts.rotate_y;
         render::rasterize_frame(render_, logo_, A_, B_, eff_speed, eff_rx, eff_ry,
-                                cfg_, render_height_, render_width_);
+                                cfg_, render_height_, render_width_, zoom_);
 
         // Hide info if it no longer fits (avoid line-wrap breaking the anim)
         int info_count = fetch_line_count_;
@@ -397,7 +411,16 @@ void App::animation_loop(const config::CliOptions& opts) {
         render::render_frame(render_, render_height_, render_width_, fetch_lines_, info_count,
                              fetch_start_, logo_, color_inner_, color_outer_, opts.use_color);
 
-        platform::sleep_ms(50);
+        if (opts.show_fps) {
+            auto now = std::chrono::steady_clock::now();
+            float dt = std::chrono::duration<float>(now - last_t).count();
+            last_t = now;
+            if (dt > 0.0001f) fps = fps * 0.9f + (1.0f / dt) * 0.1f;
+            std::printf("\033[K%.1f FPS\n", fps);
+            std::fflush(stdout);
+        }
+
+        if (!opts.unlimited) platform::sleep_ms(50);
     }
 
     platform::cursor_show();

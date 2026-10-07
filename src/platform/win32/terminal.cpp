@@ -18,6 +18,7 @@ int g_drag_dy = 0;
 int g_last_mx = -1;
 int g_last_my = -1;
 bool g_mdown = false;
+int g_wheel = 0;
 
 void drain_console(bool& key_down) {
     HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
@@ -31,6 +32,11 @@ void drain_console(bool& key_down) {
         ReadConsoleInput(hInput, &record, 1, &events); // consume non-key
         if (record.EventType == MOUSE_EVENT) {
             const auto& m = record.Event.MouseEvent;
+            if (m.dwEventFlags == MOUSE_WHEELED) {
+                short d = static_cast<short>(m.dwButtonState >> 16);
+                g_wheel += (d > 0 ? 1 : -1);
+                continue;
+            }
             int mx = static_cast<int>(m.dwMousePosition.X);
             int my = static_cast<int>(m.dwMousePosition.Y);
             bool down = (m.dwButtonState & FROM_LEFT_1ST_BUTTON_PRESSED) != 0;
@@ -162,6 +168,14 @@ bool poll_mouse_drag(int& dx, int& dy) {
     dy = g_drag_dy;
     g_drag_dx = g_drag_dy = 0;
     return dx != 0 || dy != 0;
+}
+
+int poll_mouse_wheel() {
+    bool dummy = false;
+    drain_console(dummy);
+    int w = g_wheel;
+    g_wheel = 0;
+    return w;
 }
 
 } // namespace rfxh::platform

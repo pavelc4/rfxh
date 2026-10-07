@@ -130,4 +130,8 @@ bool poll_mouse_drag(int& dx, int& dy) {
     return false;
 }
 
+int poll_mouse_wheel() {
+    return 0; // SGR wheel bytes parsed in App
+}
+
 } // namespace rfxh::platform

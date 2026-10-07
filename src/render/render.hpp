@@ -30,7 +30,8 @@ struct RenderEngine {
 // Rasterize a single frame: rotate, project, shade, depth test
 void rasterize_frame(RenderEngine& eng, const logo::Logo& logo,
                      float& A, float& B, float speed, bool rotate_x, bool rotate_y,
-                     const config::Config& cfg, int render_height, int render_width);
+                     const config::Config& cfg, int render_height, int render_width,
+                     float zoom = 1.0f);
 
 // Render frame to ANSI output (batch write to stdout)
 void render_frame(const RenderEngine& eng, int render_height, int render_width,

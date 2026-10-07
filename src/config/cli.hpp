@@ -16,6 +16,8 @@ struct CliOptions {
     bool show_info    = true;
     bool use_color    = true;
     bool infinite     = false;
+    bool show_fps     = false;
+    bool unlimited    = false;
 };
 
 CliOptions parse_cli(int argc, char** argv);
