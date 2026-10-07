@@ -314,6 +314,7 @@ bool App::handle_input(const config::CliOptions& opts) {
     }
     A_ += dA;
     B_ += dB;
+    if (dA != 0.0f || dB != 0.0f || dragging_) idle_frames_ = 0; // manual input: freeze auto-rotate
     if (reset) { A_ = B_ = 0.0f; }
     if (spaces % 2 == 1) paused_ = !paused_;
     return quit;
@@ -372,9 +373,12 @@ void App::animation_loop(const config::CliOptions& opts) {
         }
 
         // Rasterize frame (paused = freeze auto-rotation, drag/keys still work)
-        float eff_speed = paused_ ? 0.0f : opts.speed;
-        bool eff_rx = paused_ ? false : opts.rotate_x;
-        bool eff_ry = paused_ ? false : opts.rotate_y;
+        // + idle freeze: manual input stops auto-rotate, resumes after ~3s (60 frames)
+        if (idle_frames_ < 1000000) idle_frames_++;
+        bool auto_on = !paused_ && idle_frames_ > 60;
+        float eff_speed = auto_on ? opts.speed : 0.0f;
+        bool eff_rx = auto_on && opts.rotate_x;
+        bool eff_ry = auto_on && opts.rotate_y;
         render::rasterize_frame(render_, logo_, A_, B_, eff_speed, eff_rx, eff_ry,
                                 cfg_, render_height_, render_width_);
 

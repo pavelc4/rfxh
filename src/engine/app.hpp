@@ -42,6 +42,7 @@ private:
     bool dragging_ = false;
     int last_mx_ = 0;
     int last_my_ = 0;
+    int idle_frames_ = 999; // frames since last manual input
 
     // Helpers
     void load_logo(const config::CliOptions& opts);
