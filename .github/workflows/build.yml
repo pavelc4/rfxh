@@ -46,7 +46,7 @@ jobs:
         run: strip --strip-all build/rfxh
       - name: Checksum
         run: node .github/scripts/checksum.js build/rfxh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: rfxh-linux-x86_64
           path: build/rfxh*
@@ -65,7 +65,7 @@ jobs:
         run: strip -x build/rfxh
       - name: Checksum
         run: node .github/scripts/checksum.js build/rfxh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: rfxh-macos-x86_64
           path: build/rfxh*
@@ -84,7 +84,7 @@ jobs:
         run: strip -x build/rfxh
       - name: Checksum
         run: node .github/scripts/checksum.js build/rfxh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: rfxh-macos-arm64
           path: build/rfxh*
@@ -113,7 +113,7 @@ jobs:
         run: ${{ steps.ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip --strip-all build/rfxh
       - name: Checksum
         run: node .github/scripts/checksum.js build/rfxh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: rfxh-android-arm64
           path: build/rfxh*
@@ -142,7 +142,7 @@ jobs:
         run: ${{ steps.ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip --strip-all build/rfxh
       - name: Checksum
         run: node .github/scripts/checksum.js build/rfxh
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: rfxh-android-x86_64
           path: build/rfxh*
@@ -162,7 +162,7 @@ jobs:
         run: cmake --build build --parallel
       - name: Checksum
         run: node .github/scripts/checksum.js build/rfxh.exe
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: rfxh-windows-x86_64
           path: |
@@ -186,7 +186,7 @@ jobs:
           path: artifacts/
       - name: Gzip Binaries
         run: node .github/scripts/gzip.js artifacts pack
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: telegram-pack
           path: pack/
